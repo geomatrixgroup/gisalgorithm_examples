@@ -1,0 +1,1 @@
+SET DEBUG=node-express:* & npm start

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        Hello World
+    </title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+
+<body>
+    <div id="div1" />
+
+    <script>
+        // 创建段落
+        var para = document.createElement("p");
+        var node = document.createTextNode("Hello World！");
+        para.appendChild(node);
+
+        // 加入页面
+        var element = document.getElementById("div1");
+        element.appendChild(para);
+    </script>
+</body>
+
+</html>

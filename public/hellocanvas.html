@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        Hello World
+    </title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+
+<body>
+    <div id="div1" />
+
+    <script>
+        // 加入页面
+        var element = document.getElementById("div1");
+
+        // 创建段落
+        var c = document.createElement("canvas");
+        var ctx = c.getContext("2d");
+        ctx.fillStyle = "#FF0000";
+        ctx.fillRect(0, 0, 150, 75);
+        ctx.moveTo(0, 0);
+        ctx.lineTo(200, 100);
+        ctx.stroke();
+
+        element.appendChild(c);
+
+        window.onresize = click1;
+
+        function click1(id) {
+            var element = document.getElementById("div1");
+            var w = element.clientWidth;
+            var h = element.clientHeight;
+            console.log("w: %d, h: %d", w, h);
+        }
+    </script>
+</body>
+
+</html>
