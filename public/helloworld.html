@@ -20,6 +20,20 @@
         // 加入页面
         var element = document.getElementById("div1");
         element.appendChild(para);
+
+        var a = 5;
+
+        function cal() {
+            a = a * a + 1;
+        }
+
+        cal();
+
+        var para1 = document.createElement("p");
+        var node1 = document.createTextNode(a.toString());
+        para1.appendChild(node1);
+        var element1 = document.getElementById("div1");
+        element1.appendChild(para1);
     </script>
 </body>
 
