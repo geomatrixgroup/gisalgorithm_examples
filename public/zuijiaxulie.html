@@ -46,6 +46,7 @@
         var taskItems; //任务集合
         var maxDeadline; //最后期限
         var sumValue; //价值和
+        var bestSeq; //最佳序列
 
         //定义工作项目记录结构
         function taskItem() {
@@ -53,6 +54,11 @@
             this.time = 0;
             this.deadline = 0;
             this.value = 0;
+        }
+
+        //序列记录结构
+        function seqItem() {
+            this.taskItems = new Array();
         }
 
         //文件读取
@@ -118,13 +124,31 @@
             });
         }
 
+        //打印结果            
+        function printResult(item) {
+            var totalValue = 0;
+            var totalTime = 0;
+
+            document.getElementById("result1").innerText = "\n 最佳工作序列: ";
+            for (i = 0; i < item.taskItems.length; i++) {
+                var task = item.taskItems[i];
+                document.getElementById("result1").innerText += task.id.toString() + " ";
+                totalValue += task.value;
+                totalTime += task.time;
+            }
+            document.getElementById("result1").innerText += "\n 总价值: " + totalValue.toString();
+            document.getElementById("result1").innerText += "\n 总用时: " + totalTime.toString();
+        }
+
         //计算结果，并输出
         function getResult() {
             sumValue = parseInt(document.getElementById("TotalValue").value);
             maxDeadline = parseInt(document.getElementById("MaxDeadline").value);
 
-
-            document.getElementById("result1").innerText = filetext;
+            bestSeq = new seqItem();
+            bestSeq.taskItems = taskItems;
+            //document.getElementById("result1").innerText = filetext;
+            printResult(bestSeq);
         }
     </script>
 </body>
