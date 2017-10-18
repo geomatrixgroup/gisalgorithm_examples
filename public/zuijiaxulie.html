@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script type="text/javascript"></script>
+    <meta charset="utf-8">
+    <title>最佳工作序列</title>
+    <!-- <style type="text/css">
+        #result {
+            table-layout: fixed;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+    </style> -->
+</head>
+
+<body>
+    <table border="1" width=1024px height=100% align="center" name="initTable">
+        <tr>
+            <td>
+                <!-- <label for="Files">选择文件</label> -->
+                <input type="file" id="Files" name="files[]" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <pre id="source1" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                总价值:<input type="number" id="TotalValue" min="0" /> 最后完成期限: <input type="number" id="MaxDeadline" min="0" />
+                <button onclick="getResult()">计算</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <pre id="result1" />
+            </td>
+        </tr>
+    </table>
+
+    <script type="text/javascript">
+        //全局变量
+        var filetext; //文件数据
+        var taskItems; //任务集合
+        var maxDeadline; //最后期限
+        var sumValue; //价值和
+
+        //定义工作项目记录结构
+        function taskItem() {
+            this.id = 0;
+            this.time = 0;
+            this.deadline = 0;
+            this.value = 0;
+        }
+
+        //文件读取
+        function fileSelect(e) {
+            e = e || window.event;
+
+            var file = e.target.files[0];
+            var reader = new FileReader();
+            reader.onload = (function(file) {
+                return function(e) {
+                    // 加入页面
+                    document.getElementById("source1").innerText = this.result;
+                    filetext = this.result;
+                    //获取任务
+                    getTaskItems();
+                };
+            })(file);
+            //读取文件内容  
+            reader.readAsText(file);
+        }
+        //添加文件读取事件
+        if (window.File && window.FileList && window.FileReader && window.Blob) {
+            document.getElementById("Files").addEventListener("change", fileSelect, false);
+        } else {
+            document.write('您的浏览器不支持File Api');
+        }
+
+        //获取所有任务
+        function getTaskItems() {
+            var keys = filetext.split('\n');
+            // var len = keys.length;
+            taskItems = new Array();
+            for (var i = 1; i < keys.length; i++) {
+                var v = keys[i].split(',');
+                if (v.length == 4) {
+                    var item = new taskItem();
+                    item.id = parseInt(v[0]);
+                    item.time = parseInt(v[1]);
+                    item.deadline = parseInt(v[2]);
+                    item.value = parseInt(v[3]);
+                    taskItems[i - 1] = item;
+                }
+            }
+
+            //计算最后期限和价值和
+            maxDeadline = 0;
+            sumValue = 0;
+            for (var i = 0; i < taskItems.length; i++) {
+                if (taskItems[i].deadline > maxDeadline) {
+                    maxDeadline = taskItems[i].deadline;
+                }
+                sumValue += taskItems[i].value;
+            }
+            document.getElementById("TotalValue").value = sumValue.toString();
+            document.getElementById("MaxDeadline").value = maxDeadline.toString();
+            sortTaskItems();
+        }
+
+        //工作项最后完成期限由小到大排列
+        function sortTaskItems() {
+            taskItems.sort(function(a, b) {
+                return a.deadline > b.deadline;
+            });
+        }
+
+        //计算结果，并输出
+        function getResult() {
+            sumValue = parseInt(document.getElementById("TotalValue").value);
+            maxDeadline = parseInt(document.getElementById("MaxDeadline").value);
+
+
+            document.getElementById("result1").innerText = filetext;
+        }
+    </script>
+</body>
+
+</html>
