@@ -1,0 +1,592 @@
+<html>
+
+<head>
+    <title>Polygon Topology Generation</title>
+</head>
+
+<body>
+    <p>
+        选择多边形文件:
+        <input type="file" id="fileinput">
+        <input type="submit" id="button1" value="确定" onclick="readfile()">
+        <input type="submit" id="button2" value="绘制多边形" onclick="paint_polygon(canvas1)">
+    </p>
+    <p>
+        <input type="submit" id="button3" value="多边形拓扑生成" onclick="main_function()">
+        <input type="submit" id="button4" value="清空显示" onclick="clear_write()">
+    </p>
+    <canvas name=canvas1></canvas>
+    <p id="demo">暂无结果</p>
+</body>
+
+<script>
+    var MAXAMOUNT = 250;
+    var canvas1 = document.getElementsByName("canvas1")[0];
+    //将X和y的坐标同时存储进去，最终得到的base_mat类似于一个三维数组，但是每一纬度的长度不一
+    var base_mat = new Array();
+    //document.getElementById("demo").innerHTML = "段落已修改。";
+    //创建存储点位的数组,并初始化
+    var pointx_list = new Array();
+    var pointy_list = new Array();
+    for (var i = 0; i < MAXAMOUNT; i++) {
+        pointx_list[i] = -99999;
+        pointy_list[i] = -99999;
+    }
+    //创建画布坐标数组，并初始化
+    var paipointx_list = new Array();
+    var paipointy_list = new Array();
+    for (var i = 0; i < MAXAMOUNT; i++) {
+        paipointx_list[i] = -99999;
+        paipointy_list[i] = -99999;
+    }
+    var total_result = new Array();
+    //绘制网格
+    function draw_grid(canvas) {
+        canvas.width = 561;
+        canvas.height = 561;
+        if (canvas.getContext) {
+            var ctx = canvas.getContext("2d"),
+                width = canvas.width,
+                height = canvas.height;
+            ctx.lineWidth = 2;
+            ctx.globalCompositeOperation = 'destination-over';
+            for (var i = 1; i * 30 <= height; i++) {
+                ctx.strokeStyle = 'grey';
+                ctx.beginPath();
+                ctx.moveTo(0, i * 40);
+                ctx.lineTo(width, i * 40);
+                ctx.stroke();
+            }
+            for (var j = 1; j * 40 <= width; j++) {
+                ctx.strokeStyle = 'grey';
+                ctx.beginPath();
+                ctx.moveTo(j * 40, 0);
+                ctx.lineTo(j * 40, height);
+                ctx.stroke();
+            }
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.moveTo(0 + 0.5, 0 + 0.5);
+            ctx.lineTo(width, 0 + 0.5);
+            ctx.stroke();
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.moveTo(0 + 0.5, 0 + 0.5);
+            ctx.lineTo(0 + 0.5, height);
+            ctx.stroke();
+            //结束
+        }
+    }
+    //绘制网格结束
+    //读取文件并存入数组
+    function readfile() {
+        create_base();
+        var file = document.getElementById("fileinput").files[0];
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function (e) {
+            //将所有的数据存储在fileText中,fileText为一个字符数组,一行数据占据一个位置
+            var fileText = e.target.result.split("\n");
+            for (var ii = 0; ii < fileText.length; ii++) {
+                if (fileText[ii].length > 4) //排除编号和END的情况
+                {
+                    var arr = fileText[ii].split(",");//将X坐标和Y坐标分割开
+                    pointx_list[ii] = parseInt(arr[0]);
+                    pointy_list[ii] = parseInt(arr[1]);
+                }
+                else {
+                    pointy_list[ii] = -99999;
+                    pointx_list[ii] = -99999;
+                }
+            }
+        }
+
+    }
+    //读取文件结束
+    //绘制多边形
+    function paint_polygon(canvas) {
+        draw_grid(canvas);
+        var pen = "black";
+        var count = 2;
+        for (var i = 0; i < MAXAMOUNT; i++) {
+            paipointx_list[i] = -99999;
+            paipointy_list[i] = -99999;
+        }
+        for (var i = 0; i < MAXAMOUNT; i++) {
+            if (pointx_list[i] != -99999) {
+                paipointx_list[i] = pointx_list[i] + 22;
+                paipointy_list[i] = pointy_list[i] - 40;
+            }
+        }
+        for (var i = 0; i < MAXAMOUNT - 1; i++) {
+            var ctx = canvas.getContext("2d"),
+                width = canvas.width,
+                height = canvas.height;
+            ctx.lineWidth = count;
+            ctx.strokeStyle = pen;
+            if ((paipointx_list[i] != -99999) && (paipointx_list[i + 1] != -99999)) {
+                ctx.beginPath();
+                ctx.moveTo(paipointx_list[i] * 2.2, paipointy_list[i] * 2.2);
+                ctx.lineTo(paipointx_list[i + 1] * 2.2, paipointy_list[i + 1] * 2.2);
+                ctx.stroke();
+            }
+
+        }
+    }
+    //绘制多边形结束
+    //主要的创建多边形的函数
+    function create_base() {
+        //再次读取文件的内容，创建用于构建点-弧关系表的数组
+        var file = document.getElementById("fileinput").files[0];
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function (e) {
+            var fileText = e.target.result.split("\n");
+
+            //计算文件中弧段的条数，并记录每条弧段的开始点和结束点
+            var total_line_number = 0;
+            var startpoint = new Array();
+            var endpoint = new Array();
+            startpoint[0] = 0;
+            for (var i = 0; i < fileText.length - 1; i++) {
+                if (fileText[i].trim() == "END" & fileText[i + 1].trim() == "END") {
+                    endpoint.push(i + 1);
+                    startpoint.push(i + 2);
+                    total_line_number++;
+                }
+            }
+            endpoint.push(fileText.length);
+            for (var i = 0; i < total_line_number; i++) {
+                var linestart = new Array();
+                var lineend = new Array();
+                var linenum = 0;
+                linestart.push(startpoint[i]);
+                for (var j = startpoint[i]; j < endpoint[i]; j++) {
+                    if (fileText[j].trim() == "END") {
+                        linenum++;
+                        lineend.push(j);
+                        linestart.push(j + 1);
+                    }
+                }
+                lineend.push(endpoint[i]);
+                for (var p = 0; p < linenum; p++) {
+                    var line = new Array();
+                    for (var i = linestart[p] + 1; i < lineend[p]; i++) {
+                        var dot = fileText[i].split(",");
+                        line.push(dot);
+                    }
+                }
+
+                for (var p = 0; p < linenum; p++) {
+                    var line = new Array();
+                    for (var i = linestart[p] + 1; i < lineend[p]; i++) {
+                        var dot = fileText[i].split(",");
+                        line.push(dot);
+                    }
+                    for (var i = 0; i < line.length; i++) {
+                        line[i][0] = parseFloat(line[i][0]);
+                        line[i][1] = parseFloat(line[i][1]);
+                    }
+                    base_mat.push(line);
+                }
+
+            }
+        }
+    }
+    //创建弧-起点-终点关系表
+    function re_line_begin_end() {
+        //每一行表示一段弧，每行包括两个元素，即起点和终点，起点和终点中又包括其各自的x和y坐标
+        var relation_mat = new Array();
+        for (var i = 0; i < base_mat.length; i++) {
+            var temp = new Array();
+            temp = [];
+            //存储每一条弧段的首和尾
+            temp.push(i, base_mat[i][0], base_mat[i][base_mat[i].length - 1]);
+            relation_mat.push(temp);
+        }
+        return relation_mat;
+    }
+    //创建节点-弧段关系表和弧段-节点关系表
+    function re_line_point(relation_mat) {
+        //存储节点-弧段关系
+        var point_re_line = new Array();
+        //存储弧段-节点关系
+        var line_re_point = new Array();
+        //存储每个节点的文本名称
+        var text_point = new Array();
+        //所有的节点集合，无重复
+        var total_points = new Array();
+        //将所有线的起始点和终点放入到一个数组里
+        for (var i = 0; i < relation_mat.length; i++) {
+            total_points.push(relation_mat[i][1]);
+            total_points.push(relation_mat[i][2]);
+        }
+        //去除数组中相同的元素
+        for (var i = 0; i < total_points.length; i++) {
+            for (var j = i + 1; j < total_points.length;) {
+                if (judge_equal(total_points[i], total_points[j])) {
+                    total_points.splice(j, 1);
+                }
+                //相同元素删除后，数组索引会减少，所以此处不用j++
+                else {
+                    j++;
+                }
+            }
+        }
+
+        //构建弧段-结点表
+        for (var i = 0; i < relation_mat.length; i++) {
+            //temp存储弧段-节点-弧段与正方向的角度
+            var temp = new Array();
+            temp.push("A" + i);
+            for (var j = 0; j < total_points.length; j++) {
+                if (judge_equal(relation_mat[i][1], total_points[j])) {
+                    temp.push("N" + j);
+                    temp.push(total_points[j]);
+                    var angle = line_ang(total_points[j], base_mat[i][1]);
+                    temp.push(angle)
+                }
+                if (judge_equal(relation_mat[i][2], total_points[j])) {
+                    temp.push("N" + j);
+                    temp.push(total_points[j]);
+                    var angle = line_ang(total_points[j], base_mat[i][base_mat[i].length - 2]);
+                    temp.push(angle);
+                }
+            }
+            line_re_point.push(temp);
+            temp = [];
+        }
+        //节点-弧段关系表
+        for (var i = 0; i < total_points.length; i++) {
+            //temp中存储节点-经过该节点的弧段-弧段与正方向的夹角
+            var temp = new Array();
+            temp.push("N" + i);
+            temp.push(total_points[i]);
+            //text_point中存储节点名称和该节点对应的坐标
+            text_point.push(temp);   //////////////////////////////////////////////////////////////////////////
+            for (var j = 0; j < relation_mat.length; j++) {
+                if (judge_equal(relation_mat[j][1], total_points[i])) {
+                    //存储弧段号以及弧段的夹角信息
+                    temp.push("A" + relation_mat[j][0]);
+                    var angle = line_ang(total_points[i], base_mat[j][1]);
+                    temp.push(angle);
+                }
+                if (judge_equal(relation_mat[j][2], total_points[i])) {
+                    temp.push("A" + relation_mat[j][0]);
+                    var angle = line_ang(total_points[i], base_mat[j][base_mat[j].length - 2]);
+                    temp.push(angle);
+                }
+            }
+            point_re_line.push(temp);
+            temp = [];
+        }
+
+        return new Array(line_re_point, point_re_line, text_point);
+    }
+    //左转算法获取多边形，采用递归算法
+    function left_count_polygon(relation_pointandline, some_point, temp_polygon, base_point, target) {
+        //弧段-节点关系表
+        var line_re_point = relation_pointandline[0];
+        //节点-弧段关系表
+        var point_re_line = relation_pointandline[1];
+        var text_point = relation_pointandline[2];
+        if (some_point == base_point & temp_polygon[0] != null) {
+            //符合条件，将节点和弧段信息存储入总结果中
+            total_result.push(new Array(base_point, temp_polygon));
+            temp_polygon = [];
+            //当节点遍历至起始节点时，退出
+            for (var j = 0; j < point_re_line.length; j++) {
+                if (point_re_line[j][0] == base_point) {
+                    var line = j;
+                    break;
+                }
+            }
+            //寻找下一个弧
+            var next_line = next_line_search(base_point, point_re_line[line]);
+            if (next_line != null) {
+                left_count_polygon(relation_pointandline, base_point, temp_polygon, base_point, point_re_line[line][next_line]);
+                return;
+            }
+            else {
+                return;
+            }
+        }
+
+        //当一个节点的信息全部找完之后，寻找下一个节点
+        var next_point;
+        for (var i = 0; i < line_re_point.length; i++) {
+            if (line_re_point[i][0] == target) {
+                if (some_point == line_re_point[i][1]) {
+                    next_point = line_re_point[i][4];
+                    break;
+                }
+                else {
+                    next_point = line_re_point[i][1];
+                    break;
+                }
+            }
+        }
+
+        for (var i = 0; i < point_re_line.length; i++) {
+            if (point_re_line[i][0] == next_point) {
+                var min_line = min_line_index(point_re_line[i], target);
+                for (var j = 0; j < line_re_point.length; j++) {
+                    if (point_re_line[i][min_line] == line_re_point[j][0]) {
+                        temp_polygon.push(target);
+                        left_count_polygon(relation_pointandline, next_point, temp_polygon, base_point, point_re_line[i][min_line]);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    //构建多边形
+    function main_function() {
+        //创建基础的弧与点的关系表
+        relation_mat = re_line_begin_end();
+        //创建弧-节点关系表和节点-弧关系表
+        point_and_line = re_line_point(relation_mat);
+        var some_point = new Array();
+        for (var i = 0; i < point_and_line[2].length; i++) {
+            //寻找下一个弧段的索引号
+            var next_line_index = next_line_search(point_and_line[2][i][0], point_and_line[1][i]);
+            left_count_polygon(point_and_line, point_and_line[2][i][0], some_point, point_and_line[2][i][0], point_and_line[1][i][next_line_index]);
+            //将待判定点归零
+            some_point = [];
+
+        }
+
+        //清除结果中的重叠项
+        var judgedata = 0;
+        for (var ii = 0; ii < total_result.length; ii++) {
+            var text1 = total_result[ii][1];
+            for (var jj = ii + 1; jj < total_result.length; jj++) {
+                var text2 = total_result[jj][1];
+                if (text1.length != text2.length) {
+                    continue;
+                }
+                else {
+                    for (var kk1 = 0; kk1 < text1.length; kk1++) {
+                        for (var kk2 = 0; kk2 < text2.length; kk2++) {
+                            if (text1[kk1] == text2[kk2]) {
+                                judgedata++;
+                            }
+                        }
+
+                    }
+                    if (judgedata == text1.length) {
+                        total_result.splice(jj, 2);
+                    }
+                    judgedata = 0;
+                }
+            }
+        }
+        //显示运算结果
+        var result_string = "构建的多边形如下：" + "<br>";
+        for (var i = 0; i < total_result.length; i++) {
+            result_string += "多边形编号：" + i + "<br>";
+            result_string += total_result[i][1] + "<br>";
+        }
+        result_string += "其中：(显示的分别为每一个节点的X和y坐标(交叉显示))" + "<br>";
+        for (var i = 0; i < base_mat.length; i++) {
+            result_string += "A" + i + ":" + base_mat[i] + "<br>";
+        }
+        document.getElementById("demo").innerHTML = result_string;
+    }
+
+    //判断两个点坐标是否相同
+    function judge_equal(x, y) {
+        if (x[0] == y[0] & x[1] == y[1]) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
+
+
+    //计算弧段与正方向的夹角
+    function line_ang(point1, point2) {
+        if (point1[0] == point2[0]) {
+            if (point2[1] > point1[1]) {
+                return Math.PI / 2;
+            }
+            if (point2[1] < point1[1]) {
+                return Math.PI / 2 * 3;
+            }
+        }
+        if (point2[0] > point1[0]) {
+            var tan = (point2[1] - point1[1]) / (point2[0] - point1[0]);
+            if (point2[1] > point1[1]) {
+                return Math.atan(tan);
+            }
+            if (point2[1] == point1[1]) {
+                return 0;
+            }
+            if (point2[1] < point1[1]) {
+                return Math.atan(tan) + Math.PI * 2;
+            }
+        }
+        if (point2[0] < point1[0]) {
+            var tan = (point2[1] - point1[1]) / (point2[0] - point1[0]);
+            if (point2[1] > point1[1]) {
+                return Math.atan(tan) + Math.PI;
+            }
+            if (point2[1] == point1[1]) {
+                return Math.PI;
+            }
+            if (point2[1] < point1[1]) {
+                return Math.atan(tan) + Math.PI;
+            }
+        }
+
+    }
+    //根据最小左角的方法寻找下一段弧,输入的参数为需要判定的节点，和节点-弧段关系表中的角度 
+    function next_line_search(target_point, point_re_line) {
+        var temp = new Array();
+        var threshold_angle = 90;
+        //定义下一个弧段对应在关系表中的索引号
+        var next_position;
+        //如果结果不为空，就找到结果中的对应判定节点
+        if (total_result != null) {
+            for (var i = 0; i < total_result.length; i++) {
+                if (total_result[i][0] == target_point) {
+                    temp.push(total_result[i][1][0]);
+                }
+            }
+
+            //在点不重复的情况下，寻找最小左角
+            if (temp != null) {
+                for (var i = 2; i < point_re_line.length; i = i + 2) {
+                    if (threshold_angle > point_re_line[i + 1]) {
+                        if (!judgehaven_or_not(point_re_line[i], temp)) {
+                            threshold_angle = point_re_line[i + 1];
+                            next_position = i;
+                        }
+                    }
+                }
+            }
+            //如果目标节点还未在结果中出现过，则无需判断节点-弧段关系表中是否有该点，可以直接进行最小左角的判断
+            if (temp == null) {
+                for (var i = 2; i < point_re_line.length; i = i + 2) {
+                    if (threshold_angle > point_re_line[i + 1]) {
+                        threshold_angle = point_re_line[i + 1];
+                        next_position = i;
+                    }
+                }
+            }
+        }
+        //如果结果为空，也无需判断节点-关系表，直接寻找最小左角
+        if (total_result == null) {
+            for (var i = 2; i < point_re_line.length; i = i + 2) {
+                if (threshold_angle > point_re_line[i + 1]) {
+                    threshold_angle = point_re_line[i + 1];
+                    next_position = i;
+                }
+            }
+        }
+        //最终返回的是下一个弧段的索引坐标
+        if (threshold_angle != 90) {
+            return next_position;
+        }
+        //如果初始设定的角度阈值不变，则没有下一段弧存在
+        if (threshold_angle == 90) {
+            return null;
+        }
+    }
+
+
+    //判断是否遍历过	
+    function judgehaven_or_not(thing, total) {
+        for (var i = 0; i < total.length; i++) {
+            if (thing == total[i]) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+
+    //寻找下一个最小左角对应的弧	
+    function min_line_index(point_re_line, target_poi) {
+        //最小弧段对应的位置坐标，默认为下一段弧段
+        var min_position = 2;
+        //判断当前节点弧段的索引号是不是对应的最大值的索引号
+        for (var i = 0; i < point_re_line.length; i++) {
+            if (point_re_line[i] == target_poi) {
+                var judge = i;
+                var equal = i;
+                break;
+            }
+        }
+
+        //寻找最大值及最大值对应的索引号
+        var max_value = point_re_line[judge + 1];
+        for (var i = 2; i < point_re_line.length; i = i + 2) {
+            if (max_value < point_re_line[i + 1]) {
+                max_value = point_re_line[i + 1];
+                judge = i;
+            }
+        }
+
+        //创建判断因子
+        var judge_01;
+        if (equal == judge) {
+            judge_01 = 1;
+        }
+        else {
+            judge_01 = 0;
+        }
+        //若已经确定了最大值节点，就可以寻找最小左角对应的弧
+        if (judge_01) {
+            for (var i = 2; i < point_re_line.length; i = i + 2) {
+                if (point_re_line[3] > point_re_line[i + 1]) {
+                    min_position = i;
+                }
+            }
+        }
+        //若还没确定最大值节点，则需要计算左角，而不能直接采用数组中的数据
+        else {
+            //最小值对应的下标
+            var min_index;
+            //目标对应的下标
+            var target_index;
+
+            for (var i = 0; i < point_re_line.length; i++) {
+                if (point_re_line[i] == target_poi) {
+                    target_index = i;
+                    break;
+                }
+            }
+
+            var count_angle = new Array();//存储各个符合规范的角度
+            for (var i = 2; i < point_re_line.length; i = i + 2) {
+                //角度相减的临时结果，需要存入数组中
+                var temp_angle_result = point_re_line[i + 1] - point_re_line[target_index + 1];
+                //保证角度的正号性
+                if (temp_angle_result < 0) {
+                    temp_angle_result += Math.PI * 2;
+                }
+                count_angle.push(temp_angle_result);
+            }
+            var threshold_angle = 180;
+            for (var i = 0; i < count_angle.length; i++) {
+                //找到一个非零的最小角度值
+                if (count_angle[i] < threshold_angle & count_angle[i] > 0) {
+                    threshold_angle = count_angle[i];
+                    min_index = i;
+                }
+            }
+            min_position = 2 * (min_index + 1);
+        }
+        return min_position;
+    }
+    //清空显示
+    function clear_write() {
+        document.getElementById("demo").innerHTML = "";
+    }
+</script>
+
+</html>
