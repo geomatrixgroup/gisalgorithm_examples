@@ -1,487 +1,452 @@
 <html>
+
 <head>
     <title>Name Coding</title>
 </head>
-    <body>
-        <p>
-            <input type="submit" id="button1"  value="绘制/刷新网格" onclick="buttonfunction()">
-            选择文件:<input type="file" id="fileinput" >
-            <input type="submit" id="button4"  value="文件确定" onclick="readfile()">
-            
-        </p>
-        <p>
-            输入颜色:<input type="text" id=color value="blue">
-            选择粗细:<input type="number" id=count value="8">    
-            <input type="submit" id="button2"  value="书写第一个字" onclick="write_word(canvas1)">
-            <input type="submit" id="button3"  value="书写第二个字" onclick="write_word(canvas2)">
-            
-        </p>
-        <table width="841" height="328" border="1">
-            <tr>
-              <th height="43" colspan="2" scope="col">操作台</th>
-            </tr>
-            <tr>
-              <td height="45" colspan="2">操作说明：操作台仅能处理当前加载字，但支持不同画布的操作</td>
-            </tr>
-            <tr>
-              <td width="413" height="49"><div align="center"><strong>画布一</strong></div></td>
-              <td width="412"><div align="center"><strong>画布二</strong></div></td>
-            </tr>
-            <tr>
-              <td height="55"><input type="submit" name="zuoxie1" id="zuoxie1" value="左斜" onclick="zuoxie(canvas1)"/>
-              <input type="submit" name="songjian1" id="songjian1" value="耸肩" onclick="songjian(canvas1)"/>
-              <input type="submit" name="duichengx1" id="duichengx1" value="对称X" onclick="duichen(canvas1,1)"/>
-              <input type="submit" name="duichengy1" id="duichengy1" value="对称Y" onclick="duichen(canvas1,2)"/></td>
-              <td><input type="submit" name="zuoxie2" id="zuoxie2" value="左斜" onclick="zuoxie(canvas2)"/>
-                <input type="submit" name="songjian2" id="songjian2" value="耸肩" onclick="songjian(canvas2)"/>
-                <input type="submit" name="duichengx2" id="duichengx2" value="对称X" onclick="duichen(canvas2,1)"/>
-              <input type="submit" name="duichengy2" id="duichengy2" value="对称Y" onclick="duichen(canvas2,2)" /></td>
-            </tr>
-            <tr>
-              <td height="38">缩放倍数：
+
+<body>
+    <p>
+        <input type="submit" id="button1" value="绘制/刷新网格" onclick="buttonfunction()"> 选择文件:
+        <input type="file" id="fileinput">
+        <input type="submit" id="button4" value="文件确定" onclick="readfile()">
+
+    </p>
+    <p>
+        输入颜色:
+        <input type="text" id=color value="blue"> 选择粗细:
+        <input type="number" id=count value="8">
+        <input type="submit" id="button2" value="书写第一个字" onclick="write_word(canvas1)">
+        <input type="submit" id="button3" value="书写第二个字" onclick="write_word(canvas2)">
+
+    </p>
+    <table width="841" height="328" border="1">
+        <tr>
+            <th height="43" colspan="2" scope="col">操作台</th>
+        </tr>
+        <tr>
+            <td height="45" colspan="2">操作说明：操作台仅能处理当前加载字，但支持不同画布的操作</td>
+        </tr>
+        <tr>
+            <td width="413" height="49">
+                <div align="center">
+                    <strong>画布一</strong>
+                </div>
+            </td>
+            <td width="412">
+                <div align="center">
+                    <strong>画布二</strong>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td height="55">
+                <input type="submit" name="zuoxie1" id="zuoxie1" value="左斜" onclick="zuoxie(canvas1)" />
+                <input type="submit" name="songjian1" id="songjian1" value="耸肩" onclick="songjian(canvas1)" />
+                <input type="submit" name="duichengx1" id="duichengx1" value="对称X" onclick="duichen(canvas1,1)" />
+                <input type="submit" name="duichengy1" id="duichengy1" value="对称Y" onclick="duichen(canvas1,2)" />
+            </td>
+            <td>
+                <input type="submit" name="zuoxie2" id="zuoxie2" value="左斜" onclick="zuoxie(canvas2)" />
+                <input type="submit" name="songjian2" id="songjian2" value="耸肩" onclick="songjian(canvas2)" />
+                <input type="submit" name="duichengx2" id="duichengx2" value="对称X" onclick="duichen(canvas2,1)" />
+                <input type="submit" name="duichengy2" id="duichengy2" value="对称Y" onclick="duichen(canvas2,2)" />
+            </td>
+        </tr>
+        <tr>
+            <td height="38">缩放倍数：
                 <label for="beishu1"></label>
-              <input type="number" id=beishu1 value="0.5" />
-              <input type="submit" name="bilisuofang1" id="bilisuofang1" value="比例缩放" onclick="bili(canvas1,sf_1)"/></td>
-              <td>缩放倍数：
+                <input type="number" id=beishu1 value="0.5" />
+                <input type="submit" name="bilisuofang1" id="bilisuofang1" value="比例缩放" onclick="bili(canvas1,sf_1)" />
+            </td>
+            <td>缩放倍数：
                 <label for="beishu2"></label>
                 <input type="number" id=beishu2 value="0.5" />
-              <input type="submit" name="bilisuofang2" id="bilisuofang2" value="比例缩放" onclick="bili(canvas2,sf_2)"/></td>
-            </tr>
-            <tr>
-              <td height="36">旋转度数：
+                <input type="submit" name="bilisuofang2" id="bilisuofang2" value="比例缩放" onclick="bili(canvas2,sf_2)" />
+            </td>
+        </tr>
+        <tr>
+            <td height="36">旋转度数：
                 <label for="xuanzhuan1"></label>
-              <input type="number" id=xuanzhuan1 value="15"/>
-              <input type="submit" name="xuanzhuanbianhuan1" id="xuanzhuanbianhuan1" value="旋转变换" onclick="xuanzhuan(canvas1,angle_1)" /></td>
-              <td>旋转度数：
+                <input type="number" id=xuanzhuan1 value="15" />
+                <input type="submit" name="xuanzhuanbianhuan1" id="xuanzhuanbianhuan1" value="旋转变换" onclick="xuanzhuan(canvas1,angle_1)"
+                />
+            </td>
+            <td>旋转度数：
                 <label for="xuanzhuan1"></label>
-                <input type="number" id=xuanzhuan2 value="15"/>
-              <input type="submit" name="xuanzhuanbianhuan2" id="xuanzhuanbianhuan2" value="旋转变换" onclick="xuanzhuan(canvas2,angle_2)"/></td>
-            </tr>
-            <tr>
-              <td height="44"><input type="submit" name="shang1" id="shang1" value="↑" onclick="pingyi(canvas1,1)"/>
-              <input type="submit" name="xia1" id="xia1" value="↓" onclick="pingyi(canvas1,2)"/>
-              <input type="submit" name="zuo1" id="zuo1" value="←" onclick="pingyi(canvas1,3)"/>
-              <input type="submit" name="you1" id="you1" value="→" onclick="pingyi(canvas1,4)"/>
-              <input type="submit" name="huanyuan1" id="huanyuan1" value="画布字体还原" onclick="word_return(canvas1)"/></td>
-              <td><input type="submit" name="shang2" id="shang2" value="↑" onclick="pingyi(canvas2,1)"/>
-                <input type="submit" name="xia2" id="xia2" value="↓" onclick="pingyi(canvas2,2)"/>
-                <input type="submit" name="zuo2" id="zuo2" value="←" onclick="pingyi(canvas2,3)"/>
-                <input type="submit" name="you2" id="you2" value="→" onclick="pingyi(canvas2,4)"/>
-              <input type="submit" name="huanyuan2" id="huanyuan2" value="画布字体还原" onclick="word_return(canvas2)" /></td>
-            </tr>
-          </table>
+                <input type="number" id=xuanzhuan2 value="15" />
+                <input type="submit" name="xuanzhuanbianhuan2" id="xuanzhuanbianhuan2" value="旋转变换" onclick="xuanzhuan(canvas2,angle_2)"
+                />
+            </td>
+        </tr>
+        <tr>
+            <td height="44">
+                <input type="submit" name="shang1" id="shang1" value="↑" onclick="pingyi(canvas1,1)" />
+                <input type="submit" name="xia1" id="xia1" value="↓" onclick="pingyi(canvas1,2)" />
+                <input type="submit" name="zuo1" id="zuo1" value="←" onclick="pingyi(canvas1,3)" />
+                <input type="submit" name="you1" id="you1" value="→" onclick="pingyi(canvas1,4)" />
+                <input type="submit" name="huanyuan1" id="huanyuan1" value="画布字体还原" onclick="word_return(canvas1)" />
+            </td>
+            <td>
+                <input type="submit" name="shang2" id="shang2" value="↑" onclick="pingyi(canvas2,1)" />
+                <input type="submit" name="xia2" id="xia2" value="↓" onclick="pingyi(canvas2,2)" />
+                <input type="submit" name="zuo2" id="zuo2" value="←" onclick="pingyi(canvas2,3)" />
+                <input type="submit" name="you2" id="you2" value="→" onclick="pingyi(canvas2,4)" />
+                <input type="submit" name="huanyuan2" id="huanyuan2" value="画布字体还原" onclick="word_return(canvas2)" />
+            </td>
+        </tr>
+    </table>
 
-        <div id="tt">
-            
-                </div>
-        <!--绘图区域-->
-        <table width="1400" height="700" border="1">
-          <tr>
-            <th scope="col"><canvas name=canvas1></canvas></th>
-            <th scope="col"><canvas name=canvas2></canvas></th>
-          </tr>
-        </table>
-    </body>
-        <script>
-            var MAXAMOUNT=100;
-            var canvas1=document.getElementsByName("canvas1")[0];
-            var canvas2=document.getElementsByName("canvas2")[0];
-            //创建画笔颜色和大小
-            var pen;
-            var count;
-            var sf_1;
-            var sf_2;
-            var angle_1;
-            var angle_2;
-            
-            
-            //创建存储点位的数组,并初始化
-            var pointx_list=new Array();
-            var pointy_list=new Array();
-            for(var i=0;i<MAXAMOUNT;i++)
-            {
-                pointx_list[i]=-99;
-                pointy_list[i]=-99;
-            }
-            //读取文件并存入数组
-            function readfile()
-            {
-                
-                var file=document.getElementById("fileinput").files[0];
-                var reader=new FileReader();
-                reader.readAsText(file);
-                reader.onload = function (e) 
+    <div id="tt">
+
+    </div>
+    <!--绘图区域-->
+    <table width="1400" height="700" border="1">
+        <tr>
+            <th scope="col">
+                <canvas name=canvas1></canvas>
+            </th>
+            <th scope="col">
+                <canvas name=canvas2></canvas>
+            </th>
+        </tr>
+    </table>
+</body>
+<script>
+    var MAXAMOUNT = 100;
+    var canvas1 = document.getElementsByName("canvas1")[0];
+    var canvas2 = document.getElementsByName("canvas2")[0];
+    //创建画笔颜色和大小
+    var pen;
+    var count;
+    var sf_1;
+    var sf_2;
+    var angle_1;
+    var angle_2;
+
+
+    //创建存储点位的数组,并初始化
+    var pointx_list = new Array();
+    var pointy_list = new Array();
+    for (var i = 0; i < MAXAMOUNT; i++) {
+        pointx_list[i] = -99;
+        pointy_list[i] = -99;
+    }
+    //读取文件并存入数组
+    function readfile() {
+
+        var file = document.getElementById("fileinput").files[0];
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function (e) {
+            //将所有的数据存储在fileText中,fileText为一个字符数组,一行数据占据一个位置
+            var fileText = e.target.result.split("\n");
+            for (var ii = 0; ii < fileText.length; ii++) {
+                if (fileText[ii].length > 4) //排除编号和END的情况
                 {
-                    //将所有的数据存储在fileText中,fileText为一个字符数组,一行数据占据一个位置
-                    var fileText = e.target.result.split("\n");
-                    for(var ii=0;ii<fileText.length;ii++)
-                    {
-                        if(fileText[ii].length>4) //排除编号和END的情况
-                        {
-                            var arr=fileText[ii].split(",");//将X坐标和Y坐标分割开
-                            pointy_list[ii]=arr[0];
-                            pointx_list[ii]=arr[1];
-                        }
-                        else
-                        {
-                            pointy_list[ii]=-99;
-                            pointx_list[ii]=-99;
-                        }
-                    }
+                    var arr = fileText[ii].split(",");//将X坐标和Y坐标分割开
+                    pointy_list[ii] = arr[0];
+                    pointx_list[ii] = arr[1];
                 }
-    
-            }  
-            //读取文件结束
-            //读取文本框参数
-            function read_pen()
-            {
-                pen=document.getElementById("color").value;
-                count=document.getElementById("count").value;
-                //获取输入的缩放倍数
-                sf_1=document.getElementById("beishu1").value;
-                sf_2=document.getElementById("beishu2").value;
-                //获取输入的旋转度数
-                angle_1=document.getElementById("xuanzhuan1").value;
-                angle_2=document.getElementById("xuanzhuan1").value;
+                else {
+                    pointy_list[ii] = -99;
+                    pointx_list[ii] = -99;
+                }
             }
-            //读取结束
-            //绘制网格
-            function draw_grid(canvas)
-            {
-              
-              canvas.width = 641;
-              canvas.height = 641;
-              if(canvas.getContext)
-              {
-                var ctx = canvas.getContext("2d"),
+        }
+
+    }
+    //读取文件结束
+    //读取文本框参数
+    function read_pen() {
+        pen = document.getElementById("color").value;
+        count = document.getElementById("count").value;
+        //获取输入的缩放倍数
+        sf_1 = document.getElementById("beishu1").value;
+        sf_2 = document.getElementById("beishu2").value;
+        //获取输入的旋转度数
+        angle_1 = document.getElementById("xuanzhuan1").value;
+        angle_2 = document.getElementById("xuanzhuan1").value;
+    }
+    //读取结束
+    //绘制网格
+    function draw_grid(canvas) {
+
+        canvas.width = 641;
+        canvas.height = 641;
+        if (canvas.getContext) {
+            var ctx = canvas.getContext("2d"),
                 width = canvas.width,
                 height = canvas.height;
-                ctx.lineWidth = 2;
-　　　　         //先画横线
-                ctx.globalCompositeOperation = 'destination-over';
-                for( var i = 1; i * 40 <= height; i++ )
-                {
-                    ctx.strokeStyle = 'black';
-                    ctx.beginPath();
-                    ctx.moveTo(0,i * 40);
-                    ctx.lineTo(width,i* 40);
-                    ctx.stroke();
-                }
-　　　　　　　   //再画纵线
-                for( var j = 1; j * 40 <= width; j++ )
-                {
-                    ctx.strokeStyle = 'black';
-                    ctx.beginPath();
-                    ctx.moveTo(j * 40, 0);
-                    ctx.lineTo(j * 40, height);
-                    ctx.stroke();
-                }
-               //绘制边框
+            ctx.lineWidth = 2;
+            //先画横线
+            ctx.globalCompositeOperation = 'destination-over';
+            for (var i = 1; i * 40 <= height; i++) {
                 ctx.strokeStyle = 'black';
                 ctx.beginPath();
-                ctx.moveTo(0+0.5,0+0.5);
-                ctx.lineTo(width,0+0.5);
+                ctx.moveTo(0, i * 40);
+                ctx.lineTo(width, i * 40);
                 ctx.stroke();
+            }
+            //再画纵线
+            for (var j = 1; j * 40 <= width; j++) {
                 ctx.strokeStyle = 'black';
                 ctx.beginPath();
-                ctx.moveTo(0+0.5,0+0.5);
-                ctx.lineTo(0+0.5,height);
+                ctx.moveTo(j * 40, 0);
+                ctx.lineTo(j * 40, height);
                 ctx.stroke();
-                //结束
-              }
             }
-            //绘制网格结束
-            function buttonfunction()
-            {
-                draw_grid(canvas1);
-                draw_grid(canvas2);
+            //绘制边框
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.moveTo(0 + 0.5, 0 + 0.5);
+            ctx.lineTo(width, 0 + 0.5);
+            ctx.stroke();
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.moveTo(0 + 0.5, 0 + 0.5);
+            ctx.lineTo(0 + 0.5, height);
+            ctx.stroke();
+            //结束
+        }
+    }
+    //绘制网格结束
+    function buttonfunction() {
+        draw_grid(canvas1);
+        draw_grid(canvas2);
+    }
+    //书写文字
+    function write_word(canvas) {
+        // readfile();
+        read_pen();
+        for (var i = 0; i < MAXAMOUNT - 1; i++) {
+            var ctx = canvas.getContext("2d"),
+                width = canvas.width,
+                height = canvas.height;
+            ctx.lineWidth = count;
+            ctx.strokeStyle = pen;
+            if ((pointx_list[i] != -99) && (pointx_list[i + 1] != -99)) {
+                ctx.beginPath();
+                ctx.moveTo(pointx_list[i] * 40, pointy_list[i] * 40);
+                ctx.lineTo(pointx_list[i + 1] * 40, pointy_list[i + 1] * 40);
+                ctx.stroke();
             }
-            //书写文字
-            function write_word(canvas)
-            {
-               // readfile();
-                read_pen();
-                for(var i=0;i<MAXAMOUNT-1;i++)
+
+        }
+    }
+    //书写文字结束
+    //字体还原
+    function word_return(canvas) {
+        draw_grid(canvas);
+        var file = document.getElementById("fileinput").files[0];
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function (e) {
+            //将所有的数据存储在fileText中,fileText为一个字符数组,一行数据占据一个位置
+            var fileText = e.target.result.split("\n");
+            for (var ii = 0; ii < fileText.length; ii++) {
+                if (fileText[ii].length > 4) //排除编号和END的情况
                 {
-                    var ctx = canvas.getContext("2d"),
-                    width = canvas.width,
-                    height = canvas.height;
-                    ctx.lineWidth = count;
-                    ctx.strokeStyle = pen;
-                    if((pointx_list[i]!=-99)&&(pointx_list[i+1]!=-99))
-                    {
-                        ctx.beginPath();
-                        ctx.moveTo(pointx_list[i]*40,pointy_list[i]*40);
-                        ctx.lineTo(pointx_list[i+1]*40,pointy_list[i+1]*40);
-                        ctx.stroke();
-                    }
-                    
+                    var arr = fileText[ii].split(",");//将X坐标和Y坐标分割开
+                    pointy_list[ii] = arr[0];
+                    pointx_list[ii] = arr[1];
+                }
+                else {
+                    pointy_list[ii] = -99;
+                    pointx_list[ii] = -99;
                 }
             }
-            //书写文字结束
-            //字体还原
-            function word_return(canvas)
-            {
-                draw_grid(canvas);
-                var file=document.getElementById("fileinput").files[0];
-                var reader=new FileReader();
-                reader.readAsText(file);
-                reader.onload = function (e) 
-                {
-                    //将所有的数据存储在fileText中,fileText为一个字符数组,一行数据占据一个位置
-                    var fileText = e.target.result.split("\n");
-                    for(var ii=0;ii<fileText.length;ii++)
-                    {
-                        if(fileText[ii].length>4) //排除编号和END的情况
-                        {
-                            var arr=fileText[ii].split(",");//将X坐标和Y坐标分割开
-                            pointy_list[ii]=arr[0];
-                            pointx_list[ii]=arr[1];
-                        }
-                        else
-                        {
-                            pointy_list[ii]=-99;
-                            pointx_list[ii]=-99;
-                        }
-                    }
-                }
-                read_pen();
-                for(var i=0;i<MAXAMOUNT-1;i++)
-                {
-                    var ctx = canvas.getContext("2d"),
-                    width = canvas.width,
-                    height = canvas.height;
-                    ctx.lineWidth = count;
-                    ctx.strokeStyle = pen;
-                    if((pointx_list[i]!=-99)&&(pointx_list[i+1]!=-99))
-                    {
-                        ctx.beginPath();
-                        ctx.moveTo(pointx_list[i]*40,pointy_list[i]*40);
-                        ctx.lineTo(pointx_list[i+1]*40,pointy_list[i+1]*40);
-                        ctx.stroke();
-                    }
-                    
-                }
-            } 
-            //字体还原结束
-            //字体变换
-            //字体左斜变换
-            function zuoxie(canvas)
-            {
-                draw_grid(canvas);
-                //将原点定位到屏幕中心
-                for(var xx=0;xx<MAXAMOUNT;xx++)
-                {
-                    if((pointx_list[xx]!=(-99))&(pointy_list[xx]!=(-99)))
-                    {
-                      pointx_list[xx]=pointx_list[xx]-8;
-                      pointy_list[xx]=pointy_list[xx]-8;  
-                    }
-                    
-                }
-                for(var top=0;top<MAXAMOUNT;top++)
-                    {
-                        if((pointx_list[top]!=(-99))&(pointy_list[top]!=(-99)))
-                        {
-                           var tempx=pointx_list[top];
-                           var tempy=pointy_list[top];
-                           pointx_list[top]=tempx+tempy*Math.tan(15*Math.PI/180);
-                        }     
-                    }
-                //还原屏幕坐标原点
-                for(var xx=0;xx<MAXAMOUNT;xx++)
-                {
-                    if((pointx_list[xx]!=(-99))&(pointy_list[xx]!=(-99)))
-                    {
-                      pointx_list[xx]=pointx_list[xx]+8;
-                      pointy_list[xx]=pointy_list[xx]+8;  
-                    }
-                }
-                write_word(canvas);
+        }
+        read_pen();
+        for (var i = 0; i < MAXAMOUNT - 1; i++) {
+            var ctx = canvas.getContext("2d"),
+                width = canvas.width,
+                height = canvas.height;
+            ctx.lineWidth = count;
+            ctx.strokeStyle = pen;
+            if ((pointx_list[i] != -99) && (pointx_list[i + 1] != -99)) {
+                ctx.beginPath();
+                ctx.moveTo(pointx_list[i] * 40, pointy_list[i] * 40);
+                ctx.lineTo(pointx_list[i + 1] * 40, pointy_list[i + 1] * 40);
+                ctx.stroke();
             }
-            //字体左斜变换结束
-            //字体耸肩变换
-            function songjian(canvas)
-            {
-                draw_grid(canvas);
-                //将原点定位到屏幕中心
-                for(var xx=0;xx<MAXAMOUNT;xx++)
-                {
-                    if((pointx_list[xx]!=(-99))&(pointy_list[xx]!=(-99)))
-                    {
-                      pointx_list[xx]=pointx_list[xx]-8;
-                      pointy_list[xx]=pointy_list[xx]-8;  
-                    }
-                    
-                }
-                for(var top=0;top<MAXAMOUNT;top++)
-                    {
-                        if((pointx_list[top]!=(-99))&(pointy_list[top]!=(-99)))
-                        {
-                           var tempx=pointx_list[top];
-                           var tempy=pointy_list[top];
-                           pointy_list[top]=tempy-tempx*Math.tan(15*Math.PI/180);
-                        }     
-                    }
-                //还原屏幕坐标原点
-                for(var xx=0;xx<MAXAMOUNT;xx++)
-                {
-                    if((pointx_list[xx]!=(-99))&(pointy_list[xx]!=(-99)))
-                    {
-                      pointx_list[xx]=pointx_list[xx]+8;
-                      pointy_list[xx]=pointy_list[xx]+8;  
-                    }
-                }
-                write_word(canvas);
+
+        }
+    }
+    //字体还原结束
+    //字体变换
+    //字体左斜变换
+    function zuoxie(canvas) {
+        draw_grid(canvas);
+        //将原点定位到屏幕中心
+        for (var xx = 0; xx < MAXAMOUNT; xx++) {
+            if ((pointx_list[xx] != (-99)) & (pointy_list[xx] != (-99))) {
+                pointx_list[xx] = pointx_list[xx] - 8;
+                pointy_list[xx] = pointy_list[xx] - 8;
             }
-            //字体耸肩变换结束
-            //字体比例变换
-            function bili(canvas,bili_type)
-            {
-                draw_grid(canvas);
-                //将原点定位到屏幕中心
-                for(var xx=0;xx<MAXAMOUNT;xx++)
-                {
-                    if((pointx_list[xx]!=(-99))&(pointy_list[xx]!=(-99)))
-                    {
-                      pointx_list[xx]=pointx_list[xx]-8;
-                      pointy_list[xx]=pointy_list[xx]-8;  
-                    }
-                    
-                }
-                for(var top=0;top<MAXAMOUNT;top++)
-                {
-                    if((pointx_list[top]!=(-99))&(pointy_list[top]!=(-99)))
-                    {
-                        pointx_list[top]=bili_type*pointx_list[top];
-                        pointy_list[top]=bili_type*pointy_list[top]; 
-                    }     
-                }
-                //还原屏幕坐标原点
-                for(var xx=0;xx<MAXAMOUNT;xx++)
-                {
-                    if((pointx_list[xx]!=(-99))&(pointy_list[xx]!=(-99)))
-                    {
-                      pointx_list[xx]=pointx_list[xx]+8;
-                      pointy_list[xx]=pointy_list[xx]+8;  
-                    }
-                }
-                write_word(canvas);
+
+        }
+        for (var top = 0; top < MAXAMOUNT; top++) {
+            if ((pointx_list[top] != (-99)) & (pointy_list[top] != (-99))) {
+                var tempx = pointx_list[top];
+                var tempy = pointy_list[top];
+                pointx_list[top] = tempx + tempy * Math.tan(15 * Math.PI / 180);
             }
-            //字体比例变换结束
-            //字体旋转变换
-            function xuanzhuan(canvas,angle)
-            {
-                draw_grid(canvas);
-                 //将原点定位到屏幕中心
-                for(var xx=0;xx<MAXAMOUNT;xx++)
-                {
-                    if((pointx_list[xx]!=-99)&(pointy_list[xx]!=-99))
-                    {
-                      pointx_list[xx]=pointx_list[xx]-8;
-                      pointy_list[xx]=pointy_list[xx]-8;  
-                    }
-                    
-                }
-                for(var top=0;top<MAXAMOUNT;top++)
-                {
-                    if((pointx_list[top]!=-99)&(pointy_list[top]!=-99))
-                    {
-                        var tempx=pointx_list[top];
-                        var tempy=pointy_list[top];
-                        pointx_list[top]=tempx*Math.cos(angle*Math.PI/180)-tempy*Math.sin(angle*Math.PI/180);
-                        pointy_list[top]=tempx*Math.sin(angle*Math.PI/180)+tempy*Math.cos(angle*Math.PI/180);
-                    }
-                }
-                //还原屏幕坐标原点
-                for(var xx=0;xx<MAXAMOUNT;xx++)
-                {
-                    if((pointx_list[xx]!=-99)&(pointy_list[xx]!=-99))
-                    {
-                      pointx_list[xx]=pointx_list[xx]+8;
-                      pointy_list[xx]=pointy_list[xx]+8;  
-                    }
-                }
-                write_word(canvas);
+        }
+        //还原屏幕坐标原点
+        for (var xx = 0; xx < MAXAMOUNT; xx++) {
+            if ((pointx_list[xx] != (-99)) & (pointy_list[xx] != (-99))) {
+                pointx_list[xx] = pointx_list[xx] + 8;
+                pointy_list[xx] = pointy_list[xx] + 8;
             }
-            //字体旋转变换结束
-            //字体对称变换
-            function duichen(canvas,duicheng_type)
-            {
-               //1X,2Y
-               // duicheng_type=parseInt(duicheng_type);
-               draw_grid(canvas);
-              
-               if(duicheng_type==2)
-               {
-                   for(var top=0;top<MAXAMOUNT;top++)
-                   {
-                       if(pointx_list[top]!=-99)
-                       {
-                           pointx_list[top]=16-pointx_list[top];
-                       }
-                   }
-               }
-               if(duicheng_type==1)
-               {
-                   for(var top=0;top<MAXAMOUNT;top++)
-                   {
-                    if(pointy_list[top]!=-99)
-                    {
-                        pointy_list[top]=16-pointy_list[top];
-                    }
-                   }
-               }
-               write_word(canvas);
+        }
+        write_word(canvas);
+    }
+    //字体左斜变换结束
+    //字体耸肩变换
+    function songjian(canvas) {
+        draw_grid(canvas);
+        //将原点定位到屏幕中心
+        for (var xx = 0; xx < MAXAMOUNT; xx++) {
+            if ((pointx_list[xx] != (-99)) & (pointy_list[xx] != (-99))) {
+                pointx_list[xx] = pointx_list[xx] - 8;
+                pointy_list[xx] = pointy_list[xx] - 8;
             }
-            //字体对称变换结束
-            //字体平移变换
-            function pingyi(canvas,pingyi_type)
-            {
-                //1上，2下，3左，4右
-               //pingyi_type=parseInt(pingyi_type);
-                draw_grid(canvas);
-                if (pingyi_type==1)
-                {
-                    for(var top=0;top<MAXAMOUNT;top++)
-                    {
-                        if((pointx_list[top]!=-99)&(pointy_list[top]!=-99))
-                        pointy_list[top]=pointy_list[top]-1;
-                    }
-                    
-                }
-                if (pingyi_type==2)
-                {
-                    for(var top=0;top<MAXAMOUNT;top++)
-                    {
-                        if((pointx_list[top]!=-99)&(pointy_list[top]!=-99))
-                        pointy_list[top]=pointy_list[top]+1;
-                    }
-                    
-                }
-                if (pingyi_type==3)
-                {
-                    for(var top=0;top<MAXAMOUNT;top++)
-                    {
-                        if((pointx_list[top]!=-99)&(pointy_list[top]!=-99))
-                        pointx_list[top]=pointx_list[top]-1;
-                    }
-                   
-                }
-                if (pingyi_type==4)
-                {
-                    for(var top=0;top<MAXAMOUNT;top++)
-                    {
-                        if((pointx_list[top]!=-99)&(pointy_list[top]!=-99))
-                        pointx_list[top]=pointx_list[top]+1;
-                    }
-                   
-                }
-                write_word(canvas);
+
+        }
+        for (var top = 0; top < MAXAMOUNT; top++) {
+            if ((pointx_list[top] != (-99)) & (pointy_list[top] != (-99))) {
+                var tempx = pointx_list[top];
+                var tempy = pointy_list[top];
+                pointy_list[top] = tempy - tempx * Math.tan(15 * Math.PI / 180);
             }
+        }
+        //还原屏幕坐标原点
+        for (var xx = 0; xx < MAXAMOUNT; xx++) {
+            if ((pointx_list[xx] != (-99)) & (pointy_list[xx] != (-99))) {
+                pointx_list[xx] = pointx_list[xx] + 8;
+                pointy_list[xx] = pointy_list[xx] + 8;
+            }
+        }
+        write_word(canvas);
+    }
+    //字体耸肩变换结束
+    //字体比例变换
+    function bili(canvas, bili_type) {
+        draw_grid(canvas);
+        //将原点定位到屏幕中心
+        for (var xx = 0; xx < MAXAMOUNT; xx++) {
+            if ((pointx_list[xx] != (-99)) & (pointy_list[xx] != (-99))) {
+                pointx_list[xx] = pointx_list[xx] - 8;
+                pointy_list[xx] = pointy_list[xx] - 8;
+            }
+
+        }
+        for (var top = 0; top < MAXAMOUNT; top++) {
+            if ((pointx_list[top] != (-99)) & (pointy_list[top] != (-99))) {
+                pointx_list[top] = bili_type * pointx_list[top];
+                pointy_list[top] = bili_type * pointy_list[top];
+            }
+        }
+        //还原屏幕坐标原点
+        for (var xx = 0; xx < MAXAMOUNT; xx++) {
+            if ((pointx_list[xx] != (-99)) & (pointy_list[xx] != (-99))) {
+                pointx_list[xx] = pointx_list[xx] + 8;
+                pointy_list[xx] = pointy_list[xx] + 8;
+            }
+        }
+        write_word(canvas);
+    }
+    //字体比例变换结束
+    //字体旋转变换
+    function xuanzhuan(canvas, angle) {
+        draw_grid(canvas);
+        //将原点定位到屏幕中心
+        for (var xx = 0; xx < MAXAMOUNT; xx++) {
+            if ((pointx_list[xx] != -99) & (pointy_list[xx] != -99)) {
+                pointx_list[xx] = pointx_list[xx] - 8;
+                pointy_list[xx] = pointy_list[xx] - 8;
+            }
+
+        }
+        for (var top = 0; top < MAXAMOUNT; top++) {
+            if ((pointx_list[top] != -99) & (pointy_list[top] != -99)) {
+                var tempx = pointx_list[top];
+                var tempy = pointy_list[top];
+                pointx_list[top] = tempx * Math.cos(angle * Math.PI / 180) - tempy * Math.sin(angle * Math.PI / 180);
+                pointy_list[top] = tempx * Math.sin(angle * Math.PI / 180) + tempy * Math.cos(angle * Math.PI / 180);
+            }
+        }
+        //还原屏幕坐标原点
+        for (var xx = 0; xx < MAXAMOUNT; xx++) {
+            if ((pointx_list[xx] != -99) & (pointy_list[xx] != -99)) {
+                pointx_list[xx] = pointx_list[xx] + 8;
+                pointy_list[xx] = pointy_list[xx] + 8;
+            }
+        }
+        write_word(canvas);
+    }
+    //字体旋转变换结束
+    //字体对称变换
+    function duichen(canvas, duicheng_type) {
+        //1X,2Y
+        // duicheng_type=parseInt(duicheng_type);
+        draw_grid(canvas);
+
+        if (duicheng_type == 2) {
+            for (var top = 0; top < MAXAMOUNT; top++) {
+                if (pointx_list[top] != -99) {
+                    pointx_list[top] = 16 - pointx_list[top];
+                }
+            }
+        }
+        if (duicheng_type == 1) {
+            for (var top = 0; top < MAXAMOUNT; top++) {
+                if (pointy_list[top] != -99) {
+                    pointy_list[top] = 16 - pointy_list[top];
+                }
+            }
+        }
+        write_word(canvas);
+    }
+    //字体对称变换结束
+    //字体平移变换
+    function pingyi(canvas, pingyi_type) {
+        //1上，2下，3左，4右
+        //pingyi_type=parseInt(pingyi_type);
+        draw_grid(canvas);
+        if (pingyi_type == 1) {
+            for (var top = 0; top < MAXAMOUNT; top++) {
+                if ((pointx_list[top] != -99) & (pointy_list[top] != -99))
+                    pointy_list[top] = pointy_list[top] - 1;
+            }
+
+        }
+        if (pingyi_type == 2) {
+            for (var top = 0; top < MAXAMOUNT; top++) {
+                if ((pointx_list[top] != -99) & (pointy_list[top] != -99))
+                    pointy_list[top] = pointy_list[top] + 1;
+            }
+
+        }
+        if (pingyi_type == 3) {
+            for (var top = 0; top < MAXAMOUNT; top++) {
+                if ((pointx_list[top] != -99) & (pointy_list[top] != -99))
+                    pointx_list[top] = pointx_list[top] - 1;
+            }
+
+        }
+        if (pingyi_type == 4) {
+            for (var top = 0; top < MAXAMOUNT; top++) {
+                if ((pointx_list[top] != -99) & (pointy_list[top] != -99))
+                    pointx_list[top] = pointx_list[top] + 1;
+            }
+
+        }
+        write_word(canvas);
+    }
             //字体平移变换结束
             //字体变换结束
-        </script>
-    
-    
+</script>
+
+
 </html>

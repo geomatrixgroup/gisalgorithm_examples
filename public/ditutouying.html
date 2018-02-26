@@ -1,0 +1,561 @@
+<html>
+
+<head>
+    <title>this is my name</title>
+</head>
+
+<body>
+    <p>
+        Choose your file:
+        <input type="file" id="fileinput">
+    </p>
+    <p>
+        Choose pen color:
+        <input type="text" id="pencolor" value="#000000"> Enter pen width:
+        <input type="number" id="penwidth" value="1">
+
+    </p>
+    <p>请选择地图类型
+        <select id="map" onchange="select()">
+            <option value="2"></option>
+            <option value="0">中国版图</option>
+            <option value="1">世界版图</option>
+        </select>
+        start longitude:
+        <input type="text" id="startlongitude" value="116.388056"> start latitude:
+        <input type="text" id="startlatitude" value="39.9075"> end longitude:
+        <input type="text" id="endlongitude" value="2.33667778"> end latitude:
+        <input type="text" id="endlatitude" value="48.8608389">
+    </p>
+    <p>
+        <input type="submit" id="btnconfirm" value="确定" onclick="drawyourname()">
+    </p>
+    <div id="test"></div>
+</body>
+<script>
+    var dayuan = new Array();
+    function initcanvas(canvasnumber) {
+        for (var m = 0; m < canvasnumber; m++) {
+            var canvas = document.createElement("canvas");
+            canvas.id = "can" + m;
+            canvas.style.marginLeft = 50;
+            canvas.style.marginTop = 50;
+            canvas.width = 1080;
+            canvas.height = 720;
+            canvas.style.border = "2px solid";
+            document.body.appendChild(canvas);
+            var oCG = canvas.getContext('2d');
+            oCG.strokeStyle = "#8E8E8E";
+            oCG.lineWidth = "0.5";
+
+        }
+    }
+    function drawyourname() {
+        var test = document.getElementById("test");
+        var file = document.getElementById("fileinput").files[0];
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function (e) {
+            var fileText = e.target.result.split("\n");
+            var changetype = document.getElementById("map");
+            var m = 0;
+            var endposition = new Array();
+            var startposition = new Array();
+            startposition[0] = 0;
+            for (var i = 0; i < fileText.length - 1; i++) {
+                if ((fileText[i].trim() == "END") && (fileText[i + 1].trim() == "END")) {
+                    endposition.push(i + 1);
+                    startposition.push(i + 2);
+                    m++;
+                }
+            }
+            endposition.push(fileText.length);
+            if (document.getElementById("can0")) {
+                for (var i = 0; i < m; i++) {
+                    var canvas = document.getElementById("can" + i);
+                    canvas.remove();
+                }
+            }
+            initcanvas(m);
+            for (var aa = 0; aa < m; aa++) {
+                var canvas = document.getElementById("can" + aa);
+                var oCG = canvas.getContext('2d');
+                var longitude = new Array();
+                var latitude = new Array();
+                if (changetype.options[changetype.options.selectedIndex].value == "0") {
+                    for (var i = 70; i <= 140; i += 5) {
+                        longitude.push(i);
+                    }
+                    for (var j = 0; j <= 70; j += 5) {
+                        latitude.push(j);
+                    }
+                }
+                if (changetype.options[changetype.options.selectedIndex].value == "1") {
+                    for (var i = -180; i <= 180; i += 5) {
+                        longitude.push(i);
+                    }
+                    for (var j = -85; j <= 85; j += 5) {
+                        latitude.push(j);
+                    }
+                }
+                var newlong = longitude;
+                var newlat = latitude;
+                var linestart = new Array();
+                var lineend = new Array();
+                var linenum = 0;
+                linestart.push(startposition[aa]);
+                for (var j = startposition[aa]; j < endposition[aa]; j++) {
+                    if (fileText[j].trim() == "END") {
+                        linenum++;
+                        lineend.push(j);
+                        linestart.push(j + 1);
+                    }
+                }
+                lineend.push(endposition[aa]);
+                for (var p = 0; p < linenum; p++) {
+                    var line = new Array();
+                    for (var i = linestart[p] + 1; i < lineend[p]; i++) {
+                        var dot = fileText[i].split(",");
+                        line.push(dot);
+                    }
+                    var afterline;
+                    afterline = line;
+                    if (changetype.options[changetype.options.selectedIndex].value == "0") {
+                        for (var i = 0; i < line.length; i++) {
+                            line[i][0] = parseFloat(line[i][0]);
+                            line[i][1] = parseFloat(line[i][1]);
+                        }
+                        var projectiontype = document.getElementById("mmm");
+                        if (projectiontype.options[projectiontype.options.selectedIndex].value == "0") {
+                            afterline = beijing54(line);
+                        }
+                        if (projectiontype.options[projectiontype.options.selectedIndex].value == "1") {
+                            afterline = lanbert(line);
+                        }
+                        if (projectiontype.options[projectiontype.options.selectedIndex].value == "2") {
+                            afterline = mokatuo(line);
+                        }
+                    }
+                    if (changetype.options[changetype.options.selectedIndex].value == "1") {
+                        for (var i = 0; i < line.length; i++) {
+                            line[i][0] = parseFloat(line[i][0]);
+                            line[i][1] = parseFloat(line[i][1]);
+                        }
+                        var projectiontype = document.getElementById("mmm");
+                        if (projectiontype.options[projectiontype.options.selectedIndex].value == "0") {
+                            afterline = WGS84(line);
+                        }
+                        if (projectiontype.options[projectiontype.options.selectedIndex].value == "1") {
+                            afterline = shijiemokatuo(line);
+                        }
+                        if (projectiontype.options[projectiontype.options.selectedIndex].value == "2") {
+                            afterline = shijiemokatuo(line);
+
+                        }
+                    }
+                    oCG.strokeStyle = document.getElementById("pencolor").value;
+                    oCG.lineWidth = document.getElementById("penwidth").value;
+                    oCG.beginPath();
+                    oCG.moveTo(afterline[0][0], afterline[0][1]);
+                    for (var i = 1; i < afterline.length; i++) {
+                        oCG.lineTo(afterline[i][0], afterline[i][1]);
+                    }
+                    oCG.stroke();
+                }
+                oCG.closePath();
+                if (changetype.options[changetype.options.selectedIndex].value == "0") {
+                    if (projectiontype.options[projectiontype.options.selectedIndex].value == "0") {
+                        newlong = beijing54lon(longitude);
+                        newlat = beijing54lat(latitude);
+                        drawcoor(newlong, newlat, 0);
+                    }
+                    if (projectiontype.options[projectiontype.options.selectedIndex].value == "1") {
+                        var lonlat = new Array();
+                        for (var i = 0; i < 15; i++) {
+                            for (var j = 0; j < 15; j++) {
+                                var hhh = new Array(longitude[i], latitude[j]);
+                                lonlat.push(hhh);
+                            }
+                        }
+                        var newcoor = lanbert(lonlat);
+                        drawcoor1(newcoor, 0);
+                    }
+                    if (projectiontype.options[projectiontype.options.selectedIndex].value == "2") {
+                        newlong = mokatuolon(longitude);
+                        newlat = mokatuolat(latitude);
+                        drawcoor(newlong, newlat, 0);
+                    }
+                }
+                if (changetype.options[changetype.options.selectedIndex].value == "1") {
+                    if (projectiontype.options[projectiontype.options.selectedIndex].value == "0") {
+                        newlong = WGS84lon(longitude);
+                        newlat = WGS84lat(latitude);
+                        drawcoor(newlong, newlat, 0);
+                    }
+                    if (projectiontype.options[projectiontype.options.selectedIndex].value == "1") {
+                        newlong = shijiemokatuolon(longitude);
+                        newlat = shijiemokatuolat(latitude);
+                        drawcoor(newlong, newlat, 0);
+                    }
+                    if (projectiontype.options[projectiontype.options.selectedIndex].value == "2") {
+                        newlong = shijiemokatuolon(longitude);
+                        newlat = shijiemokatuolat(latitude);
+                        drawcoor(newlong, newlat, 0);
+                        if (dayuan.length != 0) {
+                            dayuan.splice(dayuan, dayuan.length);
+                        }
+                        var lonbeijing = parseFloat(document.getElementById("startlongitude").value) / 180 * Math.PI;
+                        var latbeijing = parseFloat(document.getElementById("startlatitude").value) / 180 * Math.PI;
+                        var lonbali = parseFloat(document.getElementById("endlongitude").value) / 180 * Math.PI;
+                        var latbali = parseFloat(document.getElementById("endlatitude").value) / 180 * Math.PI;
+                        findpath(lonbeijing, latbeijing, lonbali, latbali);
+                        paixuandxiaotong();
+                        var newpath = shijiemokatuo(dayuan);
+                        oCG.strokeStyle = "red";
+                        oCG.lineWidth = 3;
+                        oCG.beginPath();
+                        oCG.moveTo(newpath[0][0], newpath[0][1]);
+                        for (var i = 1; i < newpath.length; i++) {
+                            oCG.lineTo(newpath[i][0], newpath[i][1]);
+                        }
+                        oCG.stroke();
+                        oCG.closePath();
+                    }
+                }
+
+            }
+        }
+
+    }
+    function drawcoor(newlong, newlat, aa) {
+        var canvas = document.getElementById("can" + aa);
+        var oCG = canvas.getContext('2d');
+        oCG.strokeStyle = "gray";
+        oCG.lineWidth = "0.5";
+        oCG.beginPath();
+        for (var i = 0; i < newlong.length; i++) {
+            oCG.moveTo(newlong[i], newlat[0]);
+            for (var j = 1; j < newlat.length; j++) {
+                oCG.lineTo(newlong[i], newlat[j]);
+            }
+            oCG.stroke();
+        }
+        for (var i = 0; i < newlat.length; i++) {
+            oCG.moveTo(newlong[0], newlat[i]);
+            for (var j = 1; j < newlong.length; j++) {
+                oCG.lineTo(newlong[j], newlat[i]);
+            }
+            oCG.stroke();
+        }
+        oCG.closePath();
+    }
+    function drawcoor1(newcoor, aa) {
+        var canvas = document.getElementById("can" + aa);
+        var oCG = canvas.getContext('2d');
+        oCG.strokeStyle = "gray";
+        oCG.lineWidth = "0.5";
+        oCG.beginPath();
+        for (var i = 0; i < 225; i += 15) {
+            oCG.moveTo(newcoor[i][0], newcoor[i][1])
+            for (var j = 0; j < 15; j++) {
+                oCG.lineTo(newcoor[i + j][0], newcoor[i + j][1]);
+                oCG.stroke();
+            }
+
+        }
+        for (var i = 0; i < 15; i++) {
+            oCG.moveTo(newcoor[i][0], newcoor[i][1])
+            for (var j = 0; j < 15; j++) {
+                oCG.lineTo(newcoor[j * 15 + i][0], newcoor[j * 15 + i][1]);
+                oCG.stroke();
+            }
+
+        }
+        oCG.closePath();
+    }
+    function findpath(lonstart, latstart, lonend, latend) {
+        var lon1 = lonstart;
+        var lat1 = latstart;
+        var lon2 = lonend;
+        var lat2 = latend;
+        dayuan.push(new Array(lon1 / Math.PI * 180, lat1 / Math.PI * 180));
+        var delta = lon2 - lon1;
+        var bx = Math.cos(lat2) * Math.cos(delta);
+        var by = Math.cos(lat2) * Math.sin(delta);
+        var latm = Math.atan2(Math.sin(lat1) + Math.sin(lat2), Math.sqrt((Math.cos(lat1) + bx) * (Math.cos(lat1) + bx) + by * by));
+        var lonm = lon1 + Math.atan2(by, Math.cos(lat1) + bx);
+        var lon3 = lonm;
+        var lat3 = latm;
+        if (lon3 - lonstart < (-5 / 180 * Math.PI)) {
+            findpath(lon1, lat1, lon3, lat3);
+            findpath(lon3, lat3, lon2, lat2);
+        }
+        var arr = new Array(lon3 / Math.PI * 180, lat3 / Math.PI * 180);
+        dayuan.push(arr);
+        dayuan.push(new Array(lonend / Math.PI * 180, latend / Math.PI * 180));
+    }
+    function paixuandxiaotong() {
+
+        for (var i = 0; i < dayuan.length; i++) {
+            for (var j = i + 1; j < dayuan.length; j++) {
+                if (dayuan[j][0] < dayuan[i][0]) {
+                    temp = dayuan[i];
+                    dayuan[i] = dayuan[j];
+                    dayuan[j] = temp;
+                }
+            }
+        }
+        for (var i = 0; i < dayuan.length; i++) {
+            for (var j = i + 1; j < dayuan.length;) {
+                if (dayuan[j][0] == dayuan[i][0]) {
+                    dayuan.splice(j, 1);
+                }
+                else {
+                    j++;
+                }
+            }
+        }
+
+    }
+    //坐标转换
+    function WGS84(line) {
+        for (var i = 0; i < line.length; i++) {
+            line[i][0] = 540 + line[i][0] * 3;
+            line[i][1] = 315 - line[i][1] * 3;
+        }
+        return line;
+    }
+    function shijiemokatuo(line) {
+        var a = 6378137;
+        var b = 6356752.3142;
+        var e = Math.sqrt(0.006693421622966);
+        var e1 = Math.sqrt(0.006738525414684);
+        var B0 = 0;
+        var L0 = 0;
+        var k = a * a / b * Math.cos(B0) / Math.sqrt(1 + e1 * e1 * Math.cos(B0) * Math.cos(B0));
+        for (var i = 0; i < line.length; i++) {
+            var B = line[i][1] / 180 * Math.PI;
+            var L = line[i][0] / 180 * Math.PI;
+            var mmmm = Math.tan(Math.PI / 4 + B / 2) * Math.pow((1 - e * Math.sin(B)) / (1 + e * Math.sin(B)), e / 2);
+            xn = k * Math.log(mmmm);
+            ye = k * (L - L0);
+            var xxx = ye / 100000;
+            var yyy = xn / 100000;
+            line[i][0] = xxx * 1.5 + 540;
+            line[i][1] = (-yyy + 100) * 1.5 + 200;
+        }
+        return line;
+    }
+    function dayuan(line) {
+        return line;
+    }
+    function beijing54(line) {
+        for (var i = 0; i < line.length; i++) {
+            line[i][0] = (line[i][0] - 60) * 10;
+            line[i][1] = 630 - line[i][1] * 10;
+        }
+        return line;
+    }
+
+    function mokatuo(line) {
+        var a = 6378245;
+        var b = 6356863.01877;
+        var e = Math.sqrt(0.006693421622966);
+        var e1 = Math.sqrt(0.006738525414684);
+        var B0 = 0;
+        var L0 = 0;
+        var k = a * a / b * Math.cos(B0) / Math.sqrt(1 + e1 * e1 * Math.cos(B0) * Math.cos(B0));
+        for (var i = 0; i < line.length; i++) {
+            var B = line[i][1] / 180 * Math.PI;
+            var L = line[i][0] / 180 * Math.PI;
+            var mmmm = Math.tan(Math.PI / 4 + B / 2) * Math.pow((1 - e * Math.sin(B)) / (1 + e * Math.sin(B)), e / 2);
+            xn = k * Math.log(mmmm);
+            ye = k * (L - L0);
+            var xxx = ye / 100000;
+            var yyy = xn / 100000;
+            line[i][0] = xxx * 10 - 540;
+            line[i][1] = (-yyy + 100) * 10 - 270;
+        }
+        return line;
+    }
+    function lanbert(line) {
+        var e = Math.sqrt(0.006693421622966);
+        var b1 = 20 / 180 * Math.PI;
+        var b2 = 40 / 180 * Math.PI;
+        var a = 6378245;
+        var l0 = 105;
+        var b0 = 0;
+        var mb1 = Math.cos(b1) / Math.sqrt(1 - e * e * Math.sin(b1) * Math.sin(b1));
+        var mb2 = Math.cos(b2) / Math.sqrt(1 - e * e * Math.sin(b2) * Math.sin(b2));
+        var tb1 = Math.tan(Math.PI / 4 - b1 / 2) / Math.pow((1 - e * Math.sin(b1)) / (1 + e * Math.sin(b1)), e / 2);
+        var tb2 = Math.tan(Math.PI / 4 - b2 / 2) / Math.pow((1 - e * Math.sin(b2)) / (1 + e * Math.sin(b2)), e / 2);
+        var t0 = Math.tan(Math.PI / 4 - b0 / 2) / Math.pow((1 - e * Math.sin(b0)) / (1 + e * Math.sin(b0)), e / 2);
+        var n = Math.log(mb1 / mb2) / Math.log(tb1 / tb2);
+        var F = mb1 / (n * Math.pow(tb1, n));
+        for (var i = 0; i < line.length; i++) {
+            var l = line[i][0] / 180 * Math.PI;
+            var b = line[i][1] / 180 * Math.PI;
+            var t = Math.tan(Math.PI / 4 - b / 2) / Math.pow((1 - e * Math.sin(b)) / (1 + e * Math.sin(b)), e / 2);
+            var r = a * F * Math.pow(t, n);
+            var sita = n * (l - l0);
+            var r0 = a * F * Math.pow(t0, n);
+            var xn = r0 - r * Math.cos(sita);
+            var ye = r * Math.sin(sita);
+            var xxx = ye / 100000;
+            var yyy = xn / 100000;
+            line[i][0] = (-yyy + 200) * 10;
+            line[i][1] = (630 - (630 + xxx)) * 10 - 720;
+        }
+        return line;
+    }
+    //计算经纬度变换后的坐标
+    function beijing54lon(lon) {
+        for (var i = 0; i < lon.length; i++) {
+            lon[i] = (lon[i] - 60) * 10;
+        }
+        return lon;
+    }
+    function beijing54lat(lat) {
+        for (var i = 0; i < lat.length; i++) {
+            lat[i] = 630 - (lat[i]) * 10;
+        }
+        return lat;
+    }
+    function mokatuolon(lon) {
+        var a = 6378245;
+        var b = 6356863.01877;
+        var e = Math.sqrt(0.006693421622966);
+        var e1 = Math.sqrt(0.006738525414684);
+        var B0 = 0;
+        var L0 = 0;
+        var k = a * a / b * Math.cos(B0) / Math.sqrt(1 + e1 * e1 * Math.cos(B0) * Math.cos(B0));
+        for (var i = 0; i < lon.length; i++) {
+            var L = lon[i] / 180 * Math.PI;
+            //var B=lon[i]/180*Math.PI;
+            //var mmmm=Math.tan(Math.PI/4+B/2) * Math.pow( (1-e*Math.sin(B))/(1+e*Math.sin(B)) , e/2 );
+            ye = k * (L - L0);
+            var xxx = ye / 100000;
+            lon[i] = xxx * 10 - 540;
+        }
+        return lon;
+    }
+    function mokatuolat(lat) {
+        var a = 6378245;
+        var b = 6356863.01877;
+        var e = Math.sqrt(0.006693421622966);
+        var e1 = Math.sqrt(0.006738525414684);
+        var B0 = 0;
+        var L0 = 0;
+        var k = a * a / b * Math.cos(B0) / Math.sqrt(1 + e1 * e1 * Math.cos(B0) * Math.cos(B0));
+        for (var i = 0; i < lat.length; i++) {
+            var B = lat[i] / 180 * Math.PI;
+            var mmmm = Math.tan(Math.PI / 4 + B / 2) * Math.pow((1 - e * Math.sin(B)) / (1 + e * Math.sin(B)), e / 2);
+            xn = k * Math.log(mmmm);
+            var yyy = xn / 100000;
+            lat[i] = (-yyy + 100) * 10 - 270;
+        }
+        return lat;
+    }
+    function shijiemokatuolon(lon) {
+        var a = 6378245;
+        var b = 6356863.01877;
+        var e = Math.sqrt(0.006693421622966);
+        var e1 = Math.sqrt(0.006738525414684);
+        var B0 = 0;
+        var L0 = 0;
+        var k = a * a / b * Math.cos(B0) / Math.sqrt(1 + e1 * e1 * Math.cos(B0) * Math.cos(B0));
+        for (var i = 0; i < lon.length; i++) {
+            var L = lon[i] / 180 * Math.PI;
+            //var B=lon[i]/180*Math.PI;
+            //var mmmm=Math.tan(Math.PI/4+B/2) * Math.pow( (1-e*Math.sin(B))/(1+e*Math.sin(B)) , e/2 );
+            ye = k * (L - L0);
+            var xxx = ye / 100000;
+            lon[i] = xxx * 1.5 + 540;
+        }
+        return lon;
+    }
+    function shijiemokatuolat(lat) {
+        var a = 6378245;
+        var b = 6356863.01877;
+        var e = Math.sqrt(0.006693421622966);
+        var e1 = Math.sqrt(0.006738525414684);
+        var B0 = 0;
+        var L0 = 0;
+        var k = a * a / b * Math.cos(B0) / Math.sqrt(1 + e1 * e1 * Math.cos(B0) * Math.cos(B0));
+        for (var i = 0; i < lat.length; i++) {
+            var B = lat[i] / 180 * Math.PI;
+            var mmmm = Math.tan(Math.PI / 4 + B / 2) * Math.pow((1 - e * Math.sin(B)) / (1 + e * Math.sin(B)), e / 2);
+            xn = k * Math.log(mmmm);
+            var yyy = xn / 100000;
+            lat[i] = (-yyy + 100) * 1.5 + 200;
+        }
+        return lat;
+    }
+    function WGS84lon(lon) {
+        for (var i = 0; i < lon.length; i++) {
+            lon[i] = 540 + lon[i] * 3;
+        }
+        return lon;
+    }
+    function WGS84lat(lat) {
+        for (var i = 0; i < lat.length; i++) {
+            lat[i] = 315 - lat[i] * 3;
+        }
+        return lat;
+    }
+    function select() {
+        var option = document.getElementById("map");
+        if (document.getElementById("mmm")) {
+            var mmm = document.getElementById("mmm");
+            var ttt = document.getElementById("ttt");
+            ttt.remove();
+            mmm.remove();
+        }
+        if (option.options[option.options.selectedIndex].value == "0") {
+            var ddd = document.getElementById("test");
+            var ttt = document.createElement("p");
+            ttt.setAttribute('id', 'ttt');
+            ttt.innerText = "投影变换类型:";
+            var move = document.createElement("select");
+            move.setAttribute('id', 'mmm');
+            var objOption2 = document.createElement("OPTION");
+            objOption2.text = "Beijing54";
+            objOption2.value = 0;
+            move.options.add(objOption2);
+            var objOption = document.createElement("OPTION");
+            objOption.text = "兰伯特投影";
+            objOption.value = 1;
+            move.options.add(objOption);
+            var objOption1 = document.createElement("OPTION");
+            objOption1.text = "墨卡托投影";
+            objOption1.value = 2;
+            move.options.add(objOption1);
+            ddd.appendChild(ttt);
+            ddd.appendChild(move);
+        }
+        if (option.options[option.options.selectedIndex].value == "1") {
+            var ddd = document.getElementById("test");
+            var ttt = document.createElement("p");
+            ttt.setAttribute('id', 'ttt');
+            ttt.innerText = "投影变换类型:";
+            var move = document.createElement("select");
+            move.setAttribute('id', 'mmm');
+            var objOption = document.createElement("OPTION");
+            objOption.text = "WGS84";
+            objOption.value = 0;
+            move.options.add(objOption);
+            var objOption1 = document.createElement("OPTION");
+            objOption1.text = "墨卡托投影";
+            objOption1.value = 1;
+            move.options.add(objOption1);
+            var objOption2 = document.createElement("OPTION");
+            objOption2.text = "大圆航线显示";
+            objOption2.value = 2;
+            move.options.add(objOption2);
+            ddd.appendChild(ttt);
+            ddd.appendChild(move);
+        }
+    }
+</script>
+
+</html>
