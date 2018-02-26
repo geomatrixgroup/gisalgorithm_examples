@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>  
+<head>  
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />  
+<title>地图绘制</title>  
+</head>  
+<body>  
+    <div align="center">请选择您的country.gen地图数据文件：<br>
+<input type="file" id="file" onchange="handleFiles(this.files)"/><br>
+<button onClick="calculate1()">请先点我转墨卡托投影!</button>&nbsp;&nbsp;&nbsp;<button onClick="calculate2()">清空选中的国家或地区</button><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button onClick="calup()">↑</button><br>
+点击右侧的按钮，即可平移选中的国家或地区&nbsp;&nbsp;<button onClick="calleft()">←</button>&nbsp;&nbsp;&nbsp;<button onClick="calright()">→</button><br>
+（经度每次移10°，纬度每次移5°）&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button onClick="caldown()">↓</button><br>
+<canvas id="c" width="1200" height="1200" style="border:1px solid#c3c3c3;"></canvas>
+</div>
+<script>  
+var data;
+var flag1=0;
+var border= new Array(); 
+var Mercator= new Array(); 
+var selected= new Array();
+var pan= new Array();
+var drawing=document.getElementById("c");//选择画布  
+var context=drawing.getContext("2d"); 
+drawing.onmousedown = canvasClick;
+function drawCountry(){//显示选中的国家或地区
+    context.clearRect(0,0,drawing.width,drawing.height); 
+    calculate1();
+    context.lineWidth = 1;   
+    context.strokeStyle = "#CD69C9";
+    context.beginPath();//依次绘制线条
+    for(var i=0;i<selected.length;i++){
+        context.lineTo(selected[i][0],selected[i][1]);    }
+        context.stroke();
+        context.fillStyle ='rgba(205,105,201,0.2)';//填充半透明
+        context.fill();
+}
+function calup(){//纬度一次上移5°
+    context.clearRect(0,0,drawing.width,drawing.height); 
+    calculate1();
+    var t1=35000,t2=600,t3=600;
+    context.lineWidth = 1;   
+    context.strokeStyle = "#CD69C9";
+    context.beginPath();//依次绘制线条
+    for(var i=0;i<pan.length;i++){
+        pan[i][1]+=5;
+        var x = pan[i][0]* 20037508.34 / 180;
+        var y = Math.log(Math.tan((90 + pan[i][1]) * Math.PI / 360)) / (Math.PI / 180);
+            y = y*20037508.34/180;
+        context.lineTo(x/t1+t2,t3-y/t1);
+        }
+        context.stroke();
+        context.fillStyle ='rgba(205,105,201,0.2)';//填充半透明
+        context.fill();
+}
+function calright(){//经度一次右移10°
+    context.clearRect(0,0,drawing.width,drawing.height); 
+    calculate1();
+    var t1=35000,t2=600,t3=600;
+    context.lineWidth = 1;   
+    context.strokeStyle = "#CD69C9";
+    context.beginPath();//依次绘制线条
+    for(var i=0;i<pan.length;i++){
+        pan[i][0]+=10;
+        var x = pan[i][0]* 20037508.34 / 180;
+        var y = Math.log(Math.tan((90 + pan[i][1]) * Math.PI / 360)) / (Math.PI / 180);
+            y = y*20037508.34/180;
+        context.lineTo(x/t1+t2,t3-y/t1);
+        }
+        context.stroke();
+        context.fillStyle ='rgba(205,105,201,0.2)';//填充半透明
+        context.fill();
+}
+function caldown(){//纬度一次下移5°
+    context.clearRect(0,0,drawing.width,drawing.height); 
+    calculate1();
+    var t1=35000,t2=600,t3=600;
+    context.lineWidth = 1;   
+    context.strokeStyle = "#CD69C9";
+    context.beginPath();//依次绘制线条
+    for(var i=0;i<pan.length;i++){
+        pan[i][1]-=5;
+        var x = pan[i][0]* 20037508.34 / 180;
+        var y = Math.log(Math.tan((90 + pan[i][1]) * Math.PI / 360)) / (Math.PI / 180);
+            y = y*20037508.34/180;
+        context.lineTo(x/t1+t2,t3-y/t1);
+        }
+        context.stroke();
+        context.fillStyle ='rgba(205,105,201,0.2)';//填充半透明
+        context.fill();
+}
+function calleft(){//经度一次左移10°
+    context.clearRect(0,0,drawing.width,drawing.height); 
+    calculate1();
+    var t1=35000,t2=600,t3=600;
+    context.lineWidth = 1;   
+    context.strokeStyle = "#CD69C9";
+    context.beginPath();//依次绘制线条
+    for(var i=0;i<pan.length;i++){
+        pan[i][0]-=10;
+        var x = pan[i][0]* 20037508.34 / 180;
+        var y = Math.log(Math.tan((90 + pan[i][1]) * Math.PI / 360)) / (Math.PI / 180);
+            y = y*20037508.34/180;
+        context.lineTo(x/t1+t2,t3-y/t1);
+        }
+        context.stroke();
+        context.fillStyle ='rgba(205,105,201,0.2)';//填充半透明
+        context.fill();
+}
+function canvasClick(e){//鼠标点选事件
+      // 取得画布上被单击的点
+      var clickX = e.pageX - drawing.offsetLeft;
+      var clickY = e.pageY - drawing.offsetTop;
+      // 查找被单击的多边形
+      for(var i=0; i<Mercator.length; i++){
+        var tempborder = Mercator[i];
+        var check=pointInPolygon(tempborder,clickX,clickY);
+        // 判断这个点是否在多边形中
+        if (check==1){
+            selected.length=0;
+            pan.length=0;
+            for(var j=0;j<tempborder.length;j++){
+                selected.push([tempborder[j][0],tempborder[j][1]]);
+                pan.push([border[i][j][0],border[i][j][1]]);
+            }
+            // selected=tempborder.concat();
+            // pan=border[i].concat();
+          //更新显示
+          drawCountry();
+          //停止搜索
+          return;
+        }
+      }
+    //   if(check==0){
+    //       alert("未选中完整地区~请重选~");
+    //   }
+}
+function pointInPolygon(poly,x,y) {//判断点是否在多边形内
+    var polySides=poly.length;
+  var   i,j=polySides-1;
+  var  oddNodes=0;
+  for (i=0;i<polySides;i++){
+    if(poly[i][1]<y && poly[j][1]>=y||poly[j][1]<y&& poly[i][1]>=y) {
+      if(poly[i][0]+(y-poly[i][1])/(poly[j][1]-poly[i][1])*(poly[j][0]-poly[i][0])<x) {
+        oddNodes=!oddNodes;}}
+        j=i;
+    }
+  return oddNodes;
+}
+function handleFiles(files) {
+    border.length=0;
+    var t1=0;var t2=0;var t3=0;
+    for(var n=0;n<files.length;n++) {
+        var flag=0;
+        var file = files[n];
+        var reader = new FileReader();
+        reader.readAsText(file);//读取文件内容至字符串
+        reader.onload=function(f){
+            data=this.result;
+            context.clearRect(0,0,drawing.width,drawing.height); 
+            context.lineWidth = 1;  
+            context.strokeStyle = "#000000"; 
+            var strs1=data.split("END"); //将字符串以行为单位分割
+            if(strs1.length>1000){
+                t1=3.5;t2=600;t3=600;
+            }else{
+                t1=11;t2=-500;t3=900;
+            }
+            for (var i=0;i<strs1.length-1 ;i++ ){
+                var strs2=(strs1[i]).split("\n"); //将行以点为单位分割
+                var temp=new Array();
+                context.beginPath();//依次绘制线条
+                if(i==0){
+                    for(var j=1;j<strs2.length-1;j++){
+                    var strs3=strs2[j].split(","); 
+                    context.lineTo(parseFloat(strs3[0])*t1+t2,t3-parseFloat(strs3[1])*t1);
+                    temp.push([parseFloat(strs3[0]),parseFloat(strs3[1])]);
+                    //temp.push(parseFloat(strs3[1]));
+                }
+                }else{
+                for(var j=2;j<strs2.length-1;j++){
+                    var strs3=strs2[j].split(","); 
+                    context.lineTo(parseFloat(strs3[0])*t1+t2,t3-parseFloat(strs3[1])*t1);
+                    temp.push([parseFloat(strs3[0]),parseFloat(strs3[1])]);
+                   //temp.push(parseFloat(strs3[1]));
+                }
+            }
+                context.stroke();
+                border.push(temp);//经纬度存至数组
+            } 
+            flag++;
+       }
+    }
+    flag1=0;
+}
+function calculate1(){//墨卡托投影
+    var t1=35000,t2=600,t3=600;
+    context.clearRect(0,0,drawing.width,drawing.height);
+    context.lineWidth = 1;   
+    context.strokeStyle = "#663366";
+    for(var i=0;i<border.length;i++){
+        context.beginPath();//依次绘制线条
+        var temp=new Array();
+        for(j=0;j<border[i].length;j++){
+            var x = border[i][j][0]* 20037508.34 / 180;
+            var y = Math.log(Math.tan((90 + border[i][j][1]) * Math.PI / 360)) / (Math.PI / 180);
+              y = y*20037508.34/180;
+              context.lineTo(x/t1+t2,t3-y/t1);
+              temp.push([x/t1+t2,t3-y/t1]);
+        }
+        context.stroke();
+        Mercator.push(temp);
+    }
+    context.lineWidth = 1;    
+    context.strokeStyle = "#000000";
+    for(var i=0;i<72;i++){//依次绘制经纬网
+        context.beginPath();
+        var x1 = (-180+i*5)* 20037508.34 / 180;
+        var y1 = Math.log(Math.tan((90 + 90) * Math.PI / 360)) / (Math.PI / 180);
+        y1 = y1*20037508.34/180;
+        context.lineTo(x1/t1+t2,t3-y1/t1);
+        context.lineTo(x1/t1+t2,t3+y1/t1);
+        context.stroke();
+        if(i<=36){
+        context.beginPath();
+        var x2 = (-180)* 20037508.34 / 180;
+        var y2 = Math.log(Math.tan((90 +(-90+i*5)) * Math.PI / 360)) / (Math.PI / 180);
+        y2 = y2*20037508.34/180;
+        context.lineTo(x2/t1+t2,t3-y2/t1);
+        context.lineTo(-x2/t1+t2,t3-y2/t1);
+        context.stroke();
+        }
+    }
+    if(flag1==0){
+        alert("请在地图上点选一个国家或地区（由于country.gen数据存的是边界线段，最好不要选与其他国家接壤的,否则无法完整选中！）");
+    }
+    flag1=1;
+}
+function calculate2(){//清空选中的国家或地区
+    calculate1();
+    pan.length=0;
+    selected.length=0;
+}
+</script>  
+</body>  
+</html> 
