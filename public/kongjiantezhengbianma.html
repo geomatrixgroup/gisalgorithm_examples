@@ -1,0 +1,104 @@
+<html>
+    <head>
+        <title>this is my name</title>
+    </head>
+    <body>
+        <p>
+            Choose your file:<input type="file" id="fileinput" >
+        </p>
+        <p>
+            Choose pen color:<input type="text" id="pencolor" value="#000000">
+            Enter pen width:<input type="number" id="penwidth" value="3">
+            <input type="submit" id="btnconfirm"  value="确定"  onclick="drawyourname()">
+        </p>
+        <p id="test"></p>
+    </body>
+    <script>
+        function initcanvas(canvasnumber){
+            for(var m=0;m<canvasnumber;m++){
+                var canvas=document.createElement("canvas");
+                canvas.id="can"+m;
+                canvas.style.marginLeft=50;
+                canvas.style.marginTop=50;
+                canvas.width=480;
+                canvas.height=480;
+                canvas.style.border="2px solid";
+                document.body.appendChild(canvas);
+                var oCG=canvas.getContext('2d');
+                oCG.strokeStyle="#8E8E8E";
+                oCG.lineWidth="0.5";
+                oCG.beginPath();
+                for(var i=1;i<16;i++)
+                {
+                    oCG.moveTo(30*i,0);
+                    oCG.lineTo(30*i,canvas.offsetHeight);
+                    oCG.moveTo(0,30*i);
+                    oCG.lineTo(canvas.offsetWidth,30*i);
+                    oCG.stroke();
+                }
+                oCG.closePath();
+            }
+            
+        }
+        function drawyourname()
+        {
+            var test=document.getElementById("test");
+            var file=document.getElementById("fileinput").files[0];
+            var reader=new FileReader();
+            reader.readAsText(file);
+            reader.onload = function (e) {
+                
+                var fileText = e.target.result.split("\n");
+                var m=0;
+                var endposition=new Array();
+                var startposition=new Array();
+                startposition[0]=0;
+                for(var i=0;i<fileText.length-1;i++){
+                    if((fileText[i].trim()=="END")&&(fileText[i+1].trim()=="END")){
+                        endposition.push(i+1);
+                        startposition.push(i+2);
+                        m++;
+                    }
+                }
+                endposition.push(fileText.length);
+                if(document.getElementById("can0")){
+                    for(var i=0;i<m;i++){
+                        var canvas=document.getElementById("can"+i);
+                        canvas.remove();
+                    }
+                }
+                initcanvas(m);
+                for(var i=0;i<m;i++){
+                    var canvas=document.getElementById("can"+i);
+                    var oCG=canvas.getContext('2d');
+                    oCG.strokeStyle=document.getElementById("pencolor").value;
+                    oCG.lineWidth=document.getElementById("penwidth").value;
+                    oCG.beginPath();
+                    var linestart=new Array();
+                    var lineend=new Array();
+                    var linenum=0;
+                    linestart.push(startposition[i]);
+                    for(var j=startposition[i];j<endposition[i];j++){
+                        if(fileText[j].trim()=="END"){
+                            linenum++;
+                            lineend.push(j);
+                            linestart.push(j+1);
+                        }
+                    }
+                    lineend.push(endposition[i]);
+                    for(var p=0;p<linenum;p++){
+                        var startdot=fileText[linestart[p]+1].match(/\d+/g); 
+                        oCG.moveTo(startdot[0]*30,startdot[1]*30);
+                        for(var q=linestart[p]+2;q<lineend[p];q++){
+                            var dot=fileText[q].match(/\d+/g);
+                            oCG.lineTo(dot[0]*30,dot[1]*30);
+                        }
+                        oCG.stroke();
+                    }
+                    oCG.closePath();
+                }
+            }
+           
+        }
+    </script>
+</html>
