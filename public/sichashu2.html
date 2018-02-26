@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>四叉树编码</title>
+</head>
+
+<body>
+    <div align="center">请选择您的矩阵数据文件：
+        <br>
+        <br>
+        <input type="file" id="file" onchange="handleFiles(this.files)" />
+        <button onClick="calculate()">转换编码</button>
+        <br>
+        <br>
+        <table border="3">
+            <tr>
+                <td width="250">
+                    <div align="center">原矩阵</div>
+                </td>
+                <td width="350">
+                    <div align="center">编码</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div align="center">
+                        <p id="result1" width=400px></p>
+                    </div>
+                </td>
+                <td>
+                    <div align="center">
+                        <p id="result2" width=400px></p>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <script>
+        var data;
+        var flag1 = 0;
+        var row = 0; var line = 0;
+        var number = new Array();
+        var m1 = new Array();
+        var b1 = new Array();
+        function handleFiles(files) {
+            number.length = 0;
+            for (var n = 0; n < files.length; n++) {
+                var flag = 0;
+                var file = files[n];
+                var reader = new FileReader();
+                reader.readAsText(file);//读取文件内容至字符串
+                reader.onload = function (f) {
+                    data = this.result;
+                    var strs1 = data.split("\n");
+                    for (var i = 0; i < strs1.length - 1; i++) {//以逗号分割行
+                        var temp = new Array();
+                        temp = strs1[i].split(",");
+                        if (i == 0) {
+                            row = parseInt(temp[0]);
+                            line = parseInt(temp[1]);
+                        } else {
+                            if (temp.length > row) {
+                                temp.splice(row, 1);
+                            }
+                            number.push(temp);//矩阵数据存至数组
+                            for (var j = 0; j < temp.length; j++) {
+                                document.getElementById("result1").innerHTML += temp[j] + " ";
+                            }
+                            document.getElementById("result1").innerHTML += "<br>";
+                        }
+                    }
+                    flag++;
+                }
+            }
+        }
+        function equal(m, n)//判断两个数是否相等
+        {
+            if (m == n)
+                return 1;
+            else
+                return 0;
+        }
+        function fourDecimal() {//计算M码
+            for (var i = 0; i < line; i++) {
+                var temp = new Array();
+                for (var j = 0; j < row; j++) {
+                    var m = 2 * parseInt(i.toString(2)) + parseInt(j.toString(2));
+                    temp.push(m);
+                }
+                m1.push(temp);
+            }
+        }
+        function checkcombine_four(a, b) {//合并属性值相等的M码
+            for (var i = 0; i < 4; i++) {
+                for (var j = 0; j < 4; j++) {
+                    if (equal(a[2 * i][2 * j], a[2 * i][2 * j + 1]) && equal(a[2 * i][2 * j], a[2 * i + 1][2 * j]) && equal(a[2 * i][2 * j + 1], a[2 * i + 1][2 * j + 1])) {
+                        b[2 * i][2 * j + 1] = b[2 * i][2 * j];
+                        b[2 * i + 1][2 * j] = b[2 * i][2 * j];
+                        b[2 * i + 1][2 * j + 1] = b[2 * i][2 * j];
+                    }
+                }
+            }
+            for (var i = 0; i < 2; i++) {
+                for (var j = 0; j < 2; j++) {
+                    if (equal(a[2 * i][2 * j], a[2 * i][2 * (j + 1)]) && equal(a[2 * i][2 * j], a[2 * (i + 1)][2 * j]) && equal(a[2 * i][2 * (j + 1)], a[2 * (i + 1)][2 * (j + 1)])) {
+                        var t = b[2 * i][2 * j];
+                        b[2 * i][2 * (j + 1)] = t; b[2 * i][2 * (j + 1) + 1] = t; b[2 * i + 1][2 * (j + 1)] = t; b[2 * i + 1][2 * (j + 1) + 1] = t;
+                        b[2 * (i + 1)][2 * j] = t; b[2 * (i + 1)][2 * j + 1] = t; b[2 * (i + 1) + 1][2 * j] = t; b[2 * (i + 1) + 1][2 * j + 1] = t;
+                        b[2 * (i + 1)][2 * (j + 1)] = t; b[2 * (i + 1)][2 * (j + 1) + 1] = t; b[2 * (i + 1) + 1][2 * (j + 1)] = t; b[2 * (i + 1) + 1][2 * (j + 1) + 1] = t;
+                    }
+                }
+            }
+        }
+        function calculate() {//计算并打印矩阵四叉树四进制M码
+            fourDecimal();
+            checkcombine_four(number, m1);
+            for (var i = 0; i < m1.length; i++) {
+                for (var j = 0; j < m1[i].length; j++) {
+                    document.getElementById("result2").innerHTML += m1[i][j] + " ";
+                }
+                document.getElementById("result2").innerHTML += "<br>";
+            }
+        }
+    </script>
+</body>
+
+</html>
