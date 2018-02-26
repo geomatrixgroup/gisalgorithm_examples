@@ -1,0 +1,359 @@
+<html>
+
+<head>
+    <title>Name Coding</title>
+</head>
+
+<body>
+    <p>
+        <input type="submit" id="button1" value="绘制网格" onclick="draw_grid(canvas1)"> 选择颜色:
+        <input type="text" id=color value="black"> 画笔粗细:
+        <input type="number" id=count value="2">
+    </p>
+    <p>
+        读取中国经纬度数据CHINA_Arc.gen:
+        <input type="file" id="fileinput">
+        <input type="submit" id="button2" value="确定" onclick="readfile()">
+    </p>
+    <p>
+        <input type="submit" id="button3" value="绘制兰勃特投影地图" onclick="lambert_map(canvas1)">
+    </p>
+    <p>
+        距离阈值
+        <input type="number" id=maxvalue value="750">
+        <input type="submit" id="button4" value="道格拉斯-普克算法压缩" onclick="Douglas_compression()">
+        <input type="submit" id="button5" value="绘制压缩后的数据" onclick="com_data_paint(canvas1)">
+    </p>
+    <p id="demo">当前无数据压缩</p>
+
+    <canvas name=canvas1></canvas>
+
+</body>
+<script>
+    //创建画笔颜色和大小
+    var pen;
+    var count;
+    var MAXAMOUNT = 30000;
+    var canvas1 = document.getElementsByName("canvas1")[0];
+    //document.getElementById("demo").innerHTML = "段落已修改。";
+    //创建存储点位的数组,并初始化
+    var pointx_list = new Array();
+    var pointy_list = new Array();
+    for (var i = 0; i < MAXAMOUNT; i++) {
+        pointx_list[i] = -99999;
+        pointy_list[i] = -99999;
+    }
+    //创建数据压缩之后的数组，并初始化
+    var angpointx_list = new Array();
+    var angpointy_list = new Array();
+    for (var i = 0; i < MAXAMOUNT; i++) {
+        angpointx_list[i] = -99999;
+        angpointy_list[i] = -99999;
+    }
+    //创建画布坐标数组，并初始化
+    var paipointx_list = new Array();
+    var paipointy_list = new Array();
+    for (var i = 0; i < MAXAMOUNT; i++) {
+        paipointx_list[i] = -99999;
+        paipointy_list[i] = -99999;
+    }
+
+    //定义道格拉斯算法的距离阈值
+    var Douglas_distance_max;
+    //绘制网格
+    function draw_grid(canvas) {
+
+        canvas.width = 561;
+        canvas.height = 561;
+        if (canvas.getContext) {
+            var ctx = canvas.getContext("2d"),
+                width = canvas.width,
+                height = canvas.height;
+            ctx.lineWidth = 2;
+            //先画横线
+            ctx.globalCompositeOperation = 'destination-over';
+            for (var i = 1; i * 30 <= height; i++) {
+                ctx.strokeStyle = 'grey';
+                ctx.beginPath();
+                ctx.moveTo(0, i * 40);
+                ctx.lineTo(width, i * 40);
+                ctx.stroke();
+            }
+            //再画纵线
+            for (var j = 1; j * 40 <= width; j++) {
+                ctx.strokeStyle = 'grey';
+                ctx.beginPath();
+                ctx.moveTo(j * 40, 0);
+                ctx.lineTo(j * 40, height);
+                ctx.stroke();
+            }
+            //绘制边框
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.moveTo(0 + 0.5, 0 + 0.5);
+            ctx.lineTo(width, 0 + 0.5);
+            ctx.stroke();
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.moveTo(0 + 0.5, 0 + 0.5);
+            ctx.lineTo(0 + 0.5, height);
+            ctx.stroke();
+            //结束
+        }
+    }
+    //绘制网格结束
+    //读取文本框参数
+    function read_pen() {
+        pen = document.getElementById("color").value;
+        count = document.getElementById("count").value;
+        Douglas_distance_max = document.getElementById("maxvalue").value;
+    }
+    //读取结束
+    //读取文件并存入数组
+    function readfile() {
+
+        var file = document.getElementById("fileinput").files[0];
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function (e) {
+            //将所有的数据存储在fileText中,fileText为一个字符数组,一行数据占据一个位置
+            var fileText = e.target.result.split("\n");
+            for (var ii = 0; ii < fileText.length; ii++) {
+                if (fileText[ii].length > 4) //排除编号和END的情况
+                {
+                    var arr = fileText[ii].split(",");//将X坐标和Y坐标分割开
+                    pointx_list[ii] = arr[0];
+                    pointy_list[ii] = arr[1];
+                }
+                else {
+                    pointy_list[ii] = -99999;
+                    pointx_list[ii] = -99999;
+                }
+
+            }
+        }
+
+    }
+    //读取文件结束
+    //兰伯特投影转换与显示
+    function lambert_map(canvas) {
+        draw_grid(canvas);
+        read_pen();
+        readfile();
+        //兰伯特投影转换公式
+        var B0 = 0, L0 = 105, B1 = 20, B2 = 40, a = 6378245;
+        var e = Math.sqrt(0.006693421622966);
+        var mb1 = (Math.cos(B1 * Math.PI / 180)) / (Math.sqrt(1 - e * e * (Math.sin(B1 * Math.PI / 180)) * (Math.sin(B1 * Math.PI / 180))));
+        var mb2 = (Math.cos(B2 * Math.PI / 180)) / (Math.sqrt(1 - e * e * (Math.sin(B2 * Math.PI / 180)) * (Math.sin(B2 * Math.PI / 180))));
+        var tb1 = (Math.tan(Math.PI / 4 - B1 / 2 * Math.PI / 180)) / (Math.pow((1 - e * (Math.sin(B1 * Math.PI / 180))) / (1 + e * (Math.sin(B1 * Math.PI / 180))), e / 2));
+        var tb2 = (Math.tan(Math.PI / 4 - B2 / 2 * Math.PI / 180)) / (Math.pow((1 - e * (Math.sin(B2 * Math.PI / 180))) / (1 + e * (Math.sin(B2 * Math.PI / 180))), e / 2));
+        var t0 = (Math.tan((Math.PI / 4 - B0 / 2) * Math.PI / 180)) / (Math.pow((1 - e * (Math.sin(B0 * Math.PI / 180))) / (1 + e * (Math.sin(B0 * Math.PI / 180))), e / 2));
+        var n = (Math.log(mb1 / mb2)) / (Math.log(tb1 / tb2));
+        var F = mb1 / (n * Math.pow(tb1, n));
+        var r0 = a * F * Math.pow(t0, n);
+        for (var i = 0; i < MAXAMOUNT; i++) {
+            if (pointx_list[i] != -99999) {
+                var t = (Math.tan(Math.PI / 4 - pointy_list[i] / 2 * Math.PI / 180)) / (Math.pow((1 - e * (Math.sin(pointy_list[i] * Math.PI / 180))) / (1 + e * (Math.sin(pointy_list[i] * Math.PI / 180))), e / 2));
+                var r = a * F * Math.pow(t, n);
+                var theta = n * (pointx_list[i] - L0);
+                pointy_list[i] = r0 - r * Math.cos(theta * Math.PI / 180);
+                pointx_list[i] = r * Math.sin(theta * Math.PI / 180);
+                angpointx_list[i] = pointx_list[i];
+                angpointy_list[i] = pointy_list[i];
+                //排除不需要的经纬度坐标，将其替换为兰伯特投影坐标
+            }
+        }
+        //初始化paipoint_list数组
+        for (var i = 0; i < MAXAMOUNT; i++) {
+            paipointx_list[i] = -99999;
+            paipointy_list[i] = -99999;
+        }
+        //绘制投影转换结果
+        for (var i = 0; i < MAXAMOUNT; i++) {
+            if (pointx_list[i] != -99999) {
+                paipointx_list[i] = pointx_list[i] / 100000 + 120 - 83;
+                paipointy_list[i] = 180 - (pointy_list[i] / 100000 + 120) - 115;
+            }
+        }
+        for (var i = 0; i < MAXAMOUNT - 1; i++) {
+            var ctx = canvas.getContext("2d"),
+                width = canvas.width,
+                height = canvas.height;
+            ctx.lineWidth = count;
+            ctx.strokeStyle = pen;
+            if ((paipointx_list[i] != -99999) && (paipointx_list[i + 1] != -99999)) {
+                ctx.beginPath();
+                ctx.moveTo(paipointx_list[i] * 8, paipointy_list[i] * 8);
+                ctx.lineTo(paipointx_list[i + 1] * 8, paipointy_list[i + 1] * 8);
+                ctx.stroke();
+            }
+
+        }
+    }
+    //创建存储起始点和终点的数组坐标编号的数组,并初始化
+    var point_location = new Array();
+    for (var i = 1; i <= 1000; i++) {
+        point_location[i] = 0;
+    }
+    //寻找各个曲线的起点和终点
+    function search_point() {
+        var part_count = 1;//索引坐标
+        for (var i = 0; i < MAXAMOUNT - 2; i++) {
+            if ((pointx_list[i] == -99999) & (pointx_list[i + 1] != -99999)) {
+                point_location[part_count] = i + 1;
+                part_count++;
+            }
+            if ((pointx_list[i] != -99999) & (pointx_list[i + 1] == -99999)) {
+                point_location[part_count] = i;
+                part_count++;
+            }
+        }
+    }
+    //寻找起点和终点结束
+    //寻找曲线上的点离曲线两端点距离最大的点的编号和距离
+    function search_maxdistance(p1, p2) {
+        //p1,p2为曲线两端点的位置编号
+        var x1 = angpointx_list[p1];
+        var y1 = angpointy_list[p1];
+        var x2 = angpointx_list[p2];
+        var y2 = angpointy_list[p2];
+        var maxdistance = 0;
+        var location = 0;
+        //由两个端点组成的直线方程：Ax+By+C=0
+        var A = y1 - y2;
+        var B = x2 - x1;
+        var C = x1 * y2 - x2 * y1;
+        for (var i = p1 + 1; i <= p2; i++) {
+            var loc_distance = Math.abs(A * angpointx_list[i] + B * angpointy_list[i] + C) / Math.sqrt(Math.pow(A, 2) + Math.pow(B, 2));
+            if (loc_distance > maxdistance) {
+                maxdistance = loc_distance;
+                location = i;
+            }
+        }
+        var temp = new Array();
+        temp[0] = location;
+        temp[1] = maxdistance;
+        return temp;
+    }
+    //寻找距离最大的点的编号和距离结束
+    //对单条线进行压缩时，递归的终止条件
+    //即当两个端点坐标之间的坐标都为0时，说明该条曲线压缩完毕
+    function judge_circle(p1, p2) {
+        var count_number = 0;
+        if ((p2 - p1) == 0) {
+            return count_number;
+        }
+        else {
+            for (var ii = p1 + 1; ii < p2; ii++) {
+                if (angpointx_list[ii] != 0) {
+                    count_number++;
+                }
+            }
+            return count_number;
+        }
+    }
+    //一条曲线的道格拉斯压缩
+    function Douglas_single(m, n) {
+        var judge = 0;//用于分支进行距离超过阈值和没有超过的情况
+        var middle = 0;//用于存储在最大距离超过阈值之后，新的端点的位置。
+        var tt = judge_circle(m, n);//用于判断递归的终止条件
+        if (tt == 0) {
+            return;
+        }
+        var temp = search_maxdistance(m, n);
+        var max_dis = temp[1];
+        var middle = temp[0];
+        if (max_dis > Douglas_distance_max) {
+            judge = 1;
+        }
+        else {
+            judge = 0;
+        }
+        if (judge == 0) {
+            for (var j = m + 1; j < n; j++) {
+                angpointx_list[j] = 0;
+                angpointy_list[j] = 0;
+            }
+        }
+        else {
+            Douglas_single(m, middle);
+            Douglas_single(middle, n);
+        }
+
+    }
+    //进行道格拉斯-普克法进行数据压缩
+    function Douglas_compression() {
+        search_point();
+        for (var i = 1; i < 1000; i = i + 2)//依据存储的曲线两端点进行循环压缩
+        {
+            Douglas_single(point_location[i], point_location[i + 1]);
+        }
+        compression_value();
+    }
+    //数据压缩结束
+    //进行压缩后的数据显示
+    function com_data_paint(canvas) {
+        //需要去除压缩之后的坐标0项，存入数组paipoint_list中
+        var tempol = 0;
+        //初始化paipoint_list数组
+        for (var i = 0; i < MAXAMOUNT; i++) {
+            paipointx_list[i] = -99999;
+            paipointy_list[i] = -99999;
+        }
+        for (var i = 0; i < MAXAMOUNT; i++) {
+            if (angpointx_list[i] != 0) {
+                paipointx_list[tempol] = angpointx_list[i];
+                paipointy_list[tempol] = angpointy_list[i];
+                tempol++;
+            }
+        }
+        for (var i = 0; i < MAXAMOUNT - 1; i++) {
+            if (paipointx_list[i] != -99999 & paipointx_list[i + 1] != -99999) {
+                if (paipointx_list[i + 1] == paipointx_list[i]) {
+                    paipointx_list[i + 1] = paipointx_list[i] + 2000;
+                    paipointy_list[i + 1] = paipointy_list[i] + 2000;
+                }
+            }
+        }
+        for (var i = 0; i < MAXAMOUNT; i++) {
+            if (paipointx_list[i] != -99999) {
+                paipointx_list[i] = paipointx_list[i] / 100000 + 120 - 83;
+                paipointy_list[i] = 180 - (paipointy_list[i] / 100000 + 120) - 115;
+            }
+        }
+        draw_grid(canvas);
+        read_pen();
+        for (var i = 0; i < MAXAMOUNT - 1; i++) {
+            var ctx = canvas.getContext("2d"),
+                width = canvas.width,
+                height = canvas.height;
+            ctx.lineWidth = count;
+            ctx.strokeStyle = pen;
+            if ((paipointx_list[i] != -99999) && (paipointx_list[i + 1] != -99999)) {
+                ctx.beginPath();
+                ctx.moveTo(paipointx_list[i] * 8, paipointy_list[i] * 8);
+                ctx.lineTo(paipointx_list[i + 1] * 8, paipointy_list[i + 1] * 8);
+                ctx.stroke();
+            }
+
+        }
+    }
+    //压缩后数据显示结束
+    //计算道格拉斯压缩率
+    function compression_value() {
+        var old_value = 0;
+        var new_value = 0;
+        for (var i = 0; i < MAXAMOUNT; i++) {
+            if (pointx_list[i] != -99999) {
+                old_value++;
+            }
+            if ((angpointx_list[i] != 0) & (angpointx_list[i] != -99999)) {
+                new_value++;
+            }
+        }
+        var final_value = new_value / old_value * 100;
+        document.getElementById("demo").innerHTML = "数据压缩率：" + final_value + "%";
+    }
+</script>
+
+</html>

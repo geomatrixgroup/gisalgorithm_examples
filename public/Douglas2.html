@@ -1,0 +1,285 @@
+<!Doctype html>
+<html>
+
+<head>
+    <title>左转算法</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+        .result {
+            margin-left: 20px;
+            border: 1px solid black;
+            height: 260px;
+            width: 400px;
+            float: left;
+            display: block;
+            margin-top: 10px;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <a>选择输入文件：</a>
+    <input type="file" id="file" style="width: 200px;" />
+    <button onclick="Read()">确定</button>
+    <br>
+    <canvas id="map" style="border:1px solid #000;margin-top:10px;float:left"></canvas>
+    <div class="result" id="result">
+        <b>结果</b>
+        <br>
+    </div>
+    <script>
+        var canvas = document.getElementById('map');
+        var ctx = canvas.getContext('2d');
+        canvas.width = 300;
+        canvas.height = 300;
+        //弧段id与起点、终点、中间点
+        var polylines = [];
+        var points = [];
+        var polygon = [];
+        function Read() {
+            var file = document.getElementById('file').files[0];
+            var reader = new FileReader();
+            reader.readAsText(file);
+            var data = null;
+            reader.onload = function (e) {
+                data = this.result;
+                ClearCanvas();
+                DrawPolygon(data);
+                LeftTurn();
+                ShowResult();
+            }
+        }
+        function ShowResult() {
+            for (var i = 0; i < polygon.length; i++) {
+                document.getElementById('result').innerHTML += "面" + (i + 1) + "：";
+                for (var j = 0; j < polygon[i].length; j++) {
+                    document.getElementById('result').innerHTML += polygon[i][j].id + " , ";
+                }
+                document.getElementById('result').innerHTML += "<br>";
+            }
+        }
+        //判断array中是否有point
+        function CheckIn(array, point) {
+            for (var i = 0; i < array.length; i++) {
+                if (array[i][0] == point[0] && array[i][1] == point[1]) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        function MinAngle(p) {
+            var lines = [];
+            for (var i = 0; i < polylines.length; i++) {
+                var now = {};
+                if (p[0] == polylines[i].start[0] && p[1] == polylines[i].start[1]) {
+                    now = {
+                        id: polylines[i].id, start: p,
+                        next: polylines[i].points[1], end: polylines[i].end
+                    };
+                    lines.push(now);
+                }
+                else if (p[0] == polylines[i].end[0] && p[1] == polylines[i].end[1]) {
+                    var n = polylines[i].points.length - 2;
+                    now = {
+                        id: polylines[i].id, start: p,
+                        next: polylines[i].points[n], end: polylines[i].start
+                    };
+                    lines.push(now);
+                }
+            }
+            var min = Math.PI * 2;
+            var minline = {};
+            for (var i = 0; i < lines.length; i++) {
+                var x = lines[i].next[0] - lines[i].start[0];
+                var y = lines[i].next[1] - lines[i].start[1];
+                var cos = x / Math.sqrt(x * x + y * y);
+                var theta = Math.acos(cos);
+                if (y > 0) {
+                    theta = theta + Math.PI;
+                }
+                if (theta < min) {
+                    min = theta;
+                    minline = lines[i];
+                }
+            }
+            return [minline, lines.length];
+        }
+        //找到line左边夹角最近的线
+        function LeftMinAngle(line) {
+            var lines = [];
+            for (var i = 0; i < polylines.length; i++) {
+                if (polylines[i].id == line.id) {
+                    continue;
+                }
+                var now = {};
+                if (line.start[0] == polylines[i].start[0] && line.start[1] == polylines[i].start[1]) {
+                    now = {
+                        id: polylines[i].id, start: line.start,
+                        next: polylines[i].points[1], end: polylines[i].end
+                    };
+                    lines.push(now);
+                }
+                else if (line.start[0] == polylines[i].end[0] && line.start[1] == polylines[i].end[1]) {
+                    var n = polylines[i].points.length - 2;
+                    now = {
+                        id: polylines[i].id, start: line.start,
+                        next: polylines[i].points[n], end: polylines[i].start
+                    };
+                    lines.push(now);
+                }
+            }
+            var min = Math.PI * 2;
+            var minline = {};
+            for (var i = 0; i < lines.length; i++) {
+                var x1 = line.next[0] - line.start[0];
+                var y1 = line.next[1] - line.start[1];
+                var x2 = lines[i].next[0] - lines[i].start[0];
+                var y2 = lines[i].next[1] - lines[i].start[1];
+                var cos = (x1 * x2 + y1 * y2) / (Math.sqrt(x1 * x1 + y1 * y1) * Math.sqrt(x2 * x2 + y2 * y2));
+                var theta = Math.acos(cos);
+                var f = x1 * y2 - x2 * y1;
+                if (f < 0) {
+                    theta = theta + Math.PI;
+                }
+                if (theta < min) {
+                    min = theta;
+                    minline = lines[i];
+                }
+            }
+            return minline;
+        }
+        function CheckAgain(array) {
+            var b = array.slice();
+            b.sort(function (a, b) {
+                return a.id - b.id;
+            });
+            for (var i = 0; i < polygon.length; i++) {
+                var a = polygon[i].slice();
+                a.sort(function (a, b) {
+                    return a.id - b.id;
+                });
+                var mark = 0;
+                if (a.length == b.length) {
+                    for (var j = 0; j < b.length; j++) {
+                        if (a[j].id != b[j].id) {
+                            mark = 1;
+                            break;
+                        }
+                    }
+                    if (mark == 0) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        function LeftTurn() {
+            var number = 0;
+            for (var i = 0; i < points.length; i++) {
+                var ids = [];
+                var line = MinAngle(points[i])[0];
+                number = number + MinAngle(points[i])[1];
+                ids.push(line);
+                while (1) {
+                    if (ids[0].start[0] == ids[ids.length - 1].end[0] && ids[0].start[1] == ids[ids.length - 1].end[1]) {
+                        if (!CheckAgain(ids)) {
+                            polygon.push(ids);
+                        }
+                        else {
+                            number = number - 1;
+                        }
+                        ids = [];
+                        if (polygon.length == number) {
+                            break;
+                        }
+                        if (line.start[0] == polylines[line.id].start[0] && line.start[1] == polylines[line.id].start[1]) {
+                            var n = polylines[line.id].points.length - 2;
+                            var tline = {
+                                id: line.id, start: line.end,
+                                next: polylines[line.id].points[n], end: line.start
+                            }
+                        }
+                        else if (line.start[0] == polylines[line.id].end[0] && line.start[1] == polylines[line.id].end[1]) {
+                            var tline = {
+                                id: line.id, start: line.end,
+                                next: polylines[line.id].points[1], end: line.start
+                            }
+                        }
+                        ids.push(tline);
+                        angline = line;
+                    }
+                    else {
+                        var n = polylines[line.id].points.length;
+                        if (n != 2) {
+                            var angline = {
+                                id: line.id, start: line.end,
+                                next: polylines[line.id].points[n - 2], end: line.start
+                            };
+                        }
+                        else {
+                            var angline = {
+                                id: line.id, start: line.end,
+                                next: line.start, end: line.start
+                            };
+                        }
+                    }
+                    var line = LeftMinAngle(angline);
+                    ids.push(line);
+                }
+            }
+        }
+        function DrawPolygon(data) {
+            ctx.strokeStyle = "red";
+            data = data.split('\r\n');
+            var count = 0;
+            for (var i = 0; i < data.length; i++) {
+                var line = data[i];
+                if (line == "END" && data[i - 1] != "END") {
+                    var last = data[i - 1];
+                    point = last.split(',');
+                    point[0] = parseFloat(point[0]);
+                    point[1] = parseFloat(point[1]);
+                    ll.end = point;
+                    polylines.push(ll);
+                    ctx.stroke();
+                    count = 0;
+                    if (!CheckIn(points, point)) {
+                        points.push(point);
+                    }
+                    continue;
+                }
+                var point = line.split(',');
+                if (point.length < 2) {
+                    count = 1;
+                    var ll = { id: parseInt(point[0]) - 1, start: null, end: null, points: [] };
+                    continue;
+                }
+                else {
+                    point[0] = parseFloat(point[0]);
+                    point[1] = parseFloat(point[1]);
+                }
+                if (count == 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(point[0], canvas.height - point[1]);
+                    ll.start = point;
+                    ll.points.push(point);
+                    if (!CheckIn(points, point)) {
+                        points.push(point);
+                    }
+                    count++;
+                }
+                else {
+                    ctx.lineTo(point[0], canvas.height - point[1]);
+                    ll.points.push(point);
+                }
+            }
+        }
+        //清空画布
+        function ClearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    </script>
+</body>
+
+</html>
