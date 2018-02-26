@@ -1,168 +1,162 @@
 <html>
+
 <head>
     <title>Name Coding</title>
 </head>
-    <body>
-        <p>
-            选择文件:<input type="file" id="fileinput" >
-        </p>
-        <p>
-            <input type="submit" id="button4"  value="文件确定" onclick="readfile()">
-        </p>
-        <p>
-            输入颜色:<input type="text" id=color value="">
-        </p>
-        <p>
-            选择粗细:<input type="number" id=count value="">
-        </p>
-        <p>
-            <input type="submit" id="button1"  value="绘制网格" onclick="buttonfunction()">
-        </p>
-        <p>
-            <input type="submit" id="button2"  value="书写第一个字" onclick="write_word(canvas1)">
-            <input type="submit" id="button3"  value="书写第二个字" onclick="write_word(canvas2)">
-            
-        </p>
-        <div id="tt">
-            
-                </div>
-        <!--绘图区域-->
-        <table width="1400" height="700" border="1">
-          <tr>
-            <th scope="col"><canvas name=canvas1></canvas></th>
-            <th scope="col"><canvas name=canvas2></canvas></th>
-          </tr>
-        </table>
-    </body>
-        <script>
-            var MAXAMOUNT=100;
-            var canvas1=document.getElementsByName("canvas1")[0];
-            var canvas2=document.getElementsByName("canvas2")[0];
-            //创建画笔颜色和大小
-            var pen;
-            var count;
-            
-            //创建存储点位的数组,并初始化
-            var pointx_list=new Array();
-            var pointy_list=new Array();
-            for(var i=0;i<MAXAMOUNT;i++)
-            {
-                pointx_list[i]=0;
-                pointy_list[i]=0;
-            }
-            //读取文件并存入数组
-            function readfile()
-            {
-                
-                var file=document.getElementById("fileinput").files[0];
-                var reader=new FileReader();
-                reader.readAsText(file);
-                reader.onload = function (e) 
+
+<body>
+    <p>
+        选择文件:
+        <input type="file" id="fileinput">
+    </p>
+    <p>
+        <input type="submit" id="button4" value="文件确定" onclick="readfile()">
+    </p>
+    <p>
+        输入颜色:
+        <input type="text" id=color value="">
+    </p>
+    <p>
+        选择粗细:
+        <input type="number" id=count value="">
+    </p>
+    <p>
+        <input type="submit" id="button1" value="绘制网格" onclick="buttonfunction()">
+    </p>
+    <p>
+        <input type="submit" id="button2" value="书写第一个字" onclick="write_word(canvas1)">
+        <input type="submit" id="button3" value="书写第二个字" onclick="write_word(canvas2)">
+
+    </p>
+    <div id="tt">
+
+    </div>
+    <!--绘图区域-->
+    <table width="1400" height="700" border="1">
+        <tr>
+            <th scope="col">
+                <canvas name=canvas1></canvas>
+            </th>
+            <th scope="col">
+                <canvas name=canvas2></canvas>
+            </th>
+        </tr>
+    </table>
+</body>
+<script>
+    var MAXAMOUNT = 100;
+    var canvas1 = document.getElementsByName("canvas1")[0];
+    var canvas2 = document.getElementsByName("canvas2")[0];
+    //创建画笔颜色和大小
+    var pen;
+    var count;
+
+    //创建存储点位的数组,并初始化
+    var pointx_list = new Array();
+    var pointy_list = new Array();
+    for (var i = 0; i < MAXAMOUNT; i++) {
+        pointx_list[i] = 0;
+        pointy_list[i] = 0;
+    }
+    //读取文件并存入数组
+    function readfile() {
+
+        var file = document.getElementById("fileinput").files[0];
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function (e) {
+            //将所有的数据存储在fileText中,fileText为一个字符数组,一行数据占据一个位置
+            var fileText = e.target.result.split("\n");
+            for (var ii = 0; ii < fileText.length; ii++) {
+                if (fileText[ii].length > 4) //排除编号和END的情况
                 {
-                    //将所有的数据存储在fileText中,fileText为一个字符数组,一行数据占据一个位置
-                    var fileText = e.target.result.split("\n");
-                    for(var ii=0;ii<fileText.length;ii++)
-                    {
-                        if(fileText[ii].length>4) //排除编号和END的情况
-                        {
-                            var arr=fileText[ii].split(",");//将X坐标和Y坐标分割开
-                            pointy_list[ii]=arr[0];
-                            pointx_list[ii]=arr[1];
-                        }
-                        else
-                        {
-                            pointy_list[ii]=0;
-                            pointx_list[ii]=0;
-                        }
-                    }
+                    var arr = fileText[ii].split(",");//将X坐标和Y坐标分割开
+                    pointy_list[ii] = arr[0];
+                    pointx_list[ii] = arr[1];
                 }
-    
-            }  
-            //读取文件结束
-        
-            //读取画笔颜色和画笔粗细
-            function read_pen()
-            {
-                pen=document.getElementById("color").value;
-                count=document.getElementById("count").value;
+                else {
+                    pointy_list[ii] = 0;
+                    pointx_list[ii] = 0;
+                }
             }
-            //读取结束
-            //绘制网格
-            function draw_grid(canvas)
-            {
-              
-              canvas.width = 641;
-              canvas.height = 641;
-              if(canvas.getContext)
-              {
-                var ctx = canvas.getContext("2d"),
+        }
+
+    }
+    //读取文件结束
+
+    //读取画笔颜色和画笔粗细
+    function read_pen() {
+        pen = document.getElementById("color").value;
+        count = document.getElementById("count").value;
+    }
+    //读取结束
+    //绘制网格
+    function draw_grid(canvas) {
+
+        canvas.width = 641;
+        canvas.height = 641;
+        if (canvas.getContext) {
+            var ctx = canvas.getContext("2d"),
                 width = canvas.width,
                 height = canvas.height;
-                ctx.lineWidth = 2;
-　　　　         //先画横线
-                ctx.globalCompositeOperation = 'destination-over';
-                for( var i = 1; i * 40 <= height; i++ )
-                {
-                    ctx.strokeStyle = 'black';
-                    ctx.beginPath();
-                    ctx.moveTo(0,i * 40);
-                    ctx.lineTo(width,i* 40);
-                    ctx.stroke();
-                }
-　　　　　　　   //再画纵线
-                for( var j = 1; j * 40 <= width; j++ )
-                {
-                    ctx.strokeStyle = 'black';
-                    ctx.beginPath();
-                    ctx.moveTo(j * 40, 0);
-                    ctx.lineTo(j * 40, height);
-                    ctx.stroke();
-                }
-               //绘制边框
+            ctx.lineWidth = 2;
+            //先画横线
+            ctx.globalCompositeOperation = 'destination-over';
+            for (var i = 1; i * 40 <= height; i++) {
                 ctx.strokeStyle = 'black';
                 ctx.beginPath();
-                ctx.moveTo(0+0.5,0+0.5);
-                ctx.lineTo(width,0+0.5);
+                ctx.moveTo(0, i * 40);
+                ctx.lineTo(width, i * 40);
                 ctx.stroke();
+            }
+            //再画纵线
+            for (var j = 1; j * 40 <= width; j++) {
                 ctx.strokeStyle = 'black';
                 ctx.beginPath();
-                ctx.moveTo(0+0.5,0+0.5);
-                ctx.lineTo(0+0.5,height);
+                ctx.moveTo(j * 40, 0);
+                ctx.lineTo(j * 40, height);
                 ctx.stroke();
-                //结束
-              }
             }
-            //绘制网格结束
-            function buttonfunction()
-            {
-                draw_grid(canvas1);
-                draw_grid(canvas2);
+            //绘制边框
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.moveTo(0 + 0.5, 0 + 0.5);
+            ctx.lineTo(width, 0 + 0.5);
+            ctx.stroke();
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.moveTo(0 + 0.5, 0 + 0.5);
+            ctx.lineTo(0 + 0.5, height);
+            ctx.stroke();
+            //结束
+        }
+    }
+    //绘制网格结束
+    function buttonfunction() {
+        draw_grid(canvas1);
+        draw_grid(canvas2);
+    }
+    //书写文字
+    function write_word(canvas) {
+        // readfile();
+        read_pen();
+        for (var i = 0; i < MAXAMOUNT - 1; i++) {
+            var ctx = canvas.getContext("2d"),
+                width = canvas.width,
+                height = canvas.height;
+            ctx.lineWidth = count;
+            ctx.strokeStyle = pen;
+            if ((pointx_list[i] != 0) && (pointx_list[i + 1] != 0)) {
+                ctx.beginPath();
+                ctx.moveTo(pointx_list[i] * 40, pointy_list[i] * 40);
+                ctx.lineTo(pointx_list[i + 1] * 40, pointy_list[i + 1] * 40);
+                ctx.stroke();
             }
-            //书写文字
-            function write_word(canvas)
-            {
-               // readfile();
-                read_pen();
-                for(var i=0;i<MAXAMOUNT-1;i++)
-                {
-                    var ctx = canvas.getContext("2d"),
-                    width = canvas.width,
-                    height = canvas.height;
-                    ctx.lineWidth = count;
-                    ctx.strokeStyle = pen;
-                    if((pointx_list[i]!=0)&&(pointx_list[i+1]!=0))
-                    {
-                        ctx.beginPath();
-                        ctx.moveTo(pointx_list[i]*40,pointy_list[i]*40);
-                        ctx.lineTo(pointx_list[i+1]*40,pointy_list[i+1]*40);
-                        ctx.stroke();
-                    }
-                    
-                }
-            }
+
+        }
+    }
             //书写文字结束
-        </script>
-    
-    
+</script>
+
+
 </html>
-    

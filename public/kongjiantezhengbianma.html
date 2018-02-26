@@ -28,12 +28,12 @@
 	<a style="font-size:16px;margin-top:8px;">画笔设置 >>> </a>
 	<a style="font-size:16px;margin-top:8px;">颜色：</a>
 	<select id="color" style="width:70px;">
-	<option value ="red">Red</option>
-	<option value ="blue">Blue</option>
-	<option value="green">Green</option>
-	<option value="black">Black</option>
-	<option value="yellow">Yellow</option>
-</select>
+		<option value="red">Red</option>
+		<option value="blue">Blue</option>
+		<option value="green">Green</option>
+		<option value="black">Black</option>
+		<option value="yellow">Yellow</option>
+	</select>
 	<a style="margin-left:10px;margin-top:8px;">宽度：</a>
 	<input id="wid" style="width:30px;margin-top:8px;" />
 	<button class="btn" onclick="setStart()">显示</button>
@@ -42,7 +42,8 @@
 	<br/>
 	<div style="margin-top:16px;">
 		<a style="font-size:16px">字体变换 >>> </a>
-		<input id="length" style="width:20px;" /><a>px</a>
+		<input id="length" style="width:20px;" />
+		<a>px</a>
 		<button style="margin-left:10px;" onclick="panLeft()">左移</button>
 		<button onclick="panRight()">右移</button>
 		<button onclick="panUp()">上移</button>
@@ -52,14 +53,16 @@
 		<a style="margin-left:10px;margin-right:10px;">|</a>
 		<button onclick="SongJian()">耸肩</button>
 		<a style="margin-left:10px;margin-right:10px;">|</a>
-		<input id="times" style="width:20px;" /><a>倍</a>
+		<input id="times" style="width:20px;" />
+		<a>倍</a>
 		<button style="margin-left:10px;" onclick="Enlarge()">放大</button>
 		<button onclick="Reduce()">缩小</button>
 		<a style="margin-left:10px;margin-right:10px;">|</a>
 		<button onclick="LeftRightSymmetric()">左右中心对称</button>
 		<button onclick="UpDownSymmetric()">上下中心对称</button>
 		<a style="margin-left:10px;margin-right:10px;">|</a>
-		<input id="tangle" style="width:20px;" /><a>°</a>
+		<input id="tangle" style="width:20px;" />
+		<a>°</a>
 		<button onclick="ClockwiseRotate()">顺时针旋转</button>
 		<button onclick="AnticlockwiseRotate()">逆时针旋转</button>
 	</div>
