@@ -1,0 +1,397 @@
+<html>
+
+<head>
+    <title>Polygon Topology Generation</title>
+</head>
+
+<body>
+    <p>
+        选择建筑文件:
+        <input type="file" id="fileinput1">
+        <input type="submit" id="button1" value="确定" onclick="read_building()">
+
+    </p>
+    <p>
+        选择草地文件:
+        <input type="file" id="fileinput2">
+        <input type="submit" id="button2" value="确定" onclick="read_vegrgn()">
+    </p>
+    <p>
+        <input type="submit" id="button3" value="绘制原始地图" onclick="paint_basemap()">
+        <input type="submit" id="button4" value="符号化地图" onclick="total_symbolize()">
+    </p>
+    <canvas name=canvas></canvas>
+</body>
+
+<script>
+    var canvas = document.getElementsByName("canvas")[0];
+    canvas.width = 901;
+    canvas.height = 601;
+    var base_building = new Array();
+    var base_vegrgn = new Array();
+    //读取建筑文件
+    function read_building() {
+        var file = document.getElementById("fileinput1").files[0];
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function (e) {
+            var fileText = e.target.result.split("\n");
+            var total_line_number = 0;
+            var startpoint = new Array();
+            var endpoint = new Array();
+            startpoint[0] = 0;
+            for (var i = 0; i < fileText.length - 1; i++) {
+                if (fileText[i].trim() == "END" & fileText[i + 1].trim() == "END") {
+                    endpoint.push(i + 1);
+                    startpoint.push(i + 2);
+                    total_line_number++;
+                }
+            }
+            endpoint.push(fileText.length);
+            for (var i = 0; i < total_line_number; i++) {
+                var linestart = new Array();
+                var lineend = new Array();
+                var linenum = 0;
+                linestart.push(startpoint[i]);
+                for (var j = startpoint[i]; j < endpoint[i]; j++) {
+                    if (fileText[j].trim() == "END") {
+                        linenum++;
+                        lineend.push(j);
+                        linestart.push(j + 1);
+                    }
+                }
+                lineend.push(endpoint[i]);
+                for (var p = 0; p < linenum; p++) {
+                    var line = new Array();
+                    for (var i = linestart[p] + 1; i < lineend[p]; i++) {
+                        var dot = fileText[i].split(",");
+                        line.push(dot);
+                    }
+                }
+
+                for (var p = 0; p < linenum; p++) {
+                    var line = new Array();
+                    for (var i = linestart[p] + 1; i < lineend[p]; i++) {
+                        var dot = fileText[i].split(",");
+                        line.push(dot);
+                    }
+                    for (var i = 0; i < line.length; i++) {
+                        line[i][0] = parseFloat(line[i][0]);
+                        line[i][1] = parseFloat(line[i][1]);
+                    }
+                    base_building.push(line);
+                }
+
+            }
+        }
+    }
+    //读取草地文件
+    function read_vegrgn() {
+        var file = document.getElementById("fileinput2").files[0];
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function (e) {
+            var fileText = e.target.result.split("\n");
+            var total_line_number = 0;
+            var startpoint = new Array();
+            var endpoint = new Array();
+            startpoint[0] = 0;
+            for (var i = 0; i < fileText.length - 1; i++) {
+                if (fileText[i].trim() == "END" & fileText[i + 1].trim() == "END") {
+                    endpoint.push(i + 1);
+                    startpoint.push(i + 2);
+                    total_line_number++;
+                }
+            }
+            endpoint.push(fileText.length);
+            for (var i = 0; i < total_line_number; i++) {
+                var linestart = new Array();
+                var lineend = new Array();
+                var linenum = 0;
+                linestart.push(startpoint[i]);
+                for (var j = startpoint[i]; j < endpoint[i]; j++) {
+                    if (fileText[j].trim() == "END") {
+                        linenum++;
+                        lineend.push(j);
+                        linestart.push(j + 1);
+                    }
+                }
+                lineend.push(endpoint[i]);
+                for (var p = 0; p < linenum; p++) {
+                    var line = new Array();
+                    for (var i = linestart[p] + 1; i < lineend[p]; i++) {
+                        var dot = fileText[i].split(",");
+                        line.push(dot);
+                    }
+                }
+
+                for (var p = 0; p < linenum; p++) {
+                    var line = new Array();
+                    for (var i = linestart[p] + 1; i < lineend[p]; i++) {
+                        var dot = fileText[i].split(",");
+                        line.push(dot);
+                    }
+                    for (var i = 0; i < line.length; i++) {
+                        line[i][0] = parseFloat(line[i][0]);
+                        line[i][1] = parseFloat(line[i][1]);
+                    }
+                    base_vegrgn.push(line);
+                }
+
+            }
+        }
+    }
+    //绘制基础地图
+    function paint_basemap() {
+        //需要横坐标除以1000，纵坐标除以10000，以便于后面的符号化及平面运算；
+        for (var i = 0; i < base_building.length; i++) {
+            for (var j = 0; j < base_building[i].length; j++) {
+                base_building[i][j][0] = (base_building[i][j][0] % 430000 + 2) * 3;
+                base_building[i][j][1] = 601 - (base_building[i][j][1] % 3260000 - 410) * 3;
+            }
+        }
+        for (var i = 0; i < base_vegrgn.length; i++) {
+            for (var j = 0; j < base_vegrgn[i].length; j++) {
+                base_vegrgn[i][j][0] = (base_vegrgn[i][j][0] % 430000 + 2) * 3;
+                base_vegrgn[i][j][1] = 601 - (base_vegrgn[i][j][1] % 3260000 - 410) * 3;
+            }
+        }
+        //计算完适合屏幕的坐标之后开始绘制
+        if (canvas.getContext) {
+            var ctx = canvas.getContext("2d");
+            ctx.lineWidth = 1;
+            ctx.globalCompositeOperation = 'destination-over';
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            for (var i = 0; i < base_building.length; i++) {
+                for (var j = 0; j < base_building[i].length - 1; j++) {
+                    ctx.beginPath();
+                    ctx.moveTo(base_building[i][j][0], base_building[i][j][1]);
+                    ctx.lineTo(base_building[i][j + 1][0], base_building[i][j + 1][1]);
+                    ctx.stroke();
+                }
+            }
+
+            ctx.strokeStyle = 'green';
+            for (var i = 0; i < base_vegrgn.length; i++) {
+                for (var j = 0; j < base_vegrgn[i].length - 1; j++) {
+                    ctx.beginPath();
+                    ctx.moveTo(base_vegrgn[i][j][0], base_vegrgn[i][j][1]);
+                    ctx.lineTo(base_vegrgn[i][j + 1][0], base_vegrgn[i][j + 1][1]);
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+    //建筑符号
+    function building_symbolize() {
+        //base_building[i]表示每一个建筑物的面状要素
+        for (var i = 0; i < base_building.length; i++) {
+            //求取每一个面的外包矩形
+            var xmax = base_building[i][0][0];
+            var xmin = base_building[i][0][0];
+            var ymax = base_building[i][0][1];
+            var ymin = base_building[i][0][1];
+            for (var j = 0; j < base_building[i].length; j++) {
+                if (xmax < base_building[i][j][0]) {
+                    xmax = base_building[i][j][0];
+                }
+                if (xmin > base_building[i][j][0]) {
+                    xmin = base_building[i][j][0];
+                }
+                if (ymax < base_building[i][j][1]) {
+                    ymax = base_building[i][j][1];
+                }
+                if (ymin > base_building[i][j][1]) {
+                    ymin = base_building[i][j][1];
+                }
+            }
+
+            //最小外包矩形创建完毕，区域范围为xmin，xmax，ymin，ymax
+            crossover_point1(xmin, xmax, ymin, ymax, base_building[i]);
+        }
+    }
+    //计算基于等腰直角三角形的直线与一个多边形的交点,基于建筑
+    function crossover_point1(xmin, xmax, ymin, ymax, an_polygon) {
+        var basex = xmin;
+        var basey = ymin;
+
+        for (var ii = basex; ii < xmax + (ymax - ymin); ii += 8) {
+            var b1 = ii + basey;
+            var temp = new Array();
+            for (var j = 0; j < an_polygon.length - 1; j++) {
+                //交点坐标
+                var crossx, crossy;
+                //在斜率存在的情况下   
+                if (an_polygon[j + 1][0] != an_polygon[j][0]) {
+                    var k2 = (an_polygon[j + 1][1] - an_polygon[j][1]) / (an_polygon[j + 1][0] - an_polygon[j][0]);
+                    var b2 = (an_polygon[j + 1][0] * an_polygon[j][1] - an_polygon[j][0] * an_polygon[j + 1][1]) / (an_polygon[j + 1][0] - an_polygon[j][0]);
+                    //斜率不同才有交点
+                    if (k2 != (-1)) {
+                        crossx = (b2 - b1) / (-1 - k2);
+                        crossy = (-1) * crossx + b1;
+                    }
+                }
+                //在斜率不存在的情况下
+                else {
+                    crossx = an_polygon[j][0];
+                    crossy = (-1) * crossx + b1;
+                }
+                //保证交点是在有效范围内的  
+                if ((crossx <= an_polygon[j][0] & crossx >= an_polygon[j + 1][0]) || (crossx >= an_polygon[j][0] & crossx <= an_polygon[j + 1][0])) {
+                    if ((crossy <= an_polygon[j][1] & crossy >= an_polygon[j + 1][1]) || (crossy >= an_polygon[j][1] & crossy <= an_polygon[j + 1][1])) {
+                        temp.push([crossx, crossy]);
+                    }
+                }
+            }
+            //对得到的交点坐标排序
+            for (var i = 0; i < temp.length; i++) {
+                for (var j = i; j < temp.length; j++) {
+                    if (temp[i][0] > temp[j][0]) {
+                        var te1 = temp[i][0];
+                        temp[i][0] = temp[j][0];
+                        temp[j][0] = te1;
+                        var te2 = temp[i][1];
+                        temp[i][1] = temp[j][1];
+                        temp[j][1] = te2;
+                    }
+                }
+            }
+            //绘制符号
+            if (canvas.getContext) {
+                var ctx = canvas.getContext("2d");
+                ctx.lineWidth = 1;
+                ctx.globalCompositeOperation = 'destination-over';
+                ctx.strokeStyle = 'black';
+                ctx.beginPath();
+                for (var j = 0; j < temp.length - 1; j += 2) {
+                    ctx.beginPath();
+                    ctx.moveTo(temp[j][0], temp[j][1]);
+                    ctx.lineTo(temp[j + 1][0], temp[j + 1][1]);
+                    ctx.stroke();
+                }
+
+            }
+        }
+
+    }
+    //草地基本符号
+    function vegrgn_symbol(x, y) {
+        if (canvas.getContext) {
+            var ctx = canvas.getContext("2d");
+            ctx.lineWidth = 1;
+            ctx.globalCompositeOperation = 'destination-over';
+            ctx.strokeStyle = 'green';
+            ctx.beginPath();
+            ctx.moveTo(x - 2, y - 2);
+            ctx.lineTo(x, y);
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + 2, y - 2);
+            ctx.stroke();
+        }
+    }
+    //草地符号
+    function vegrgn_symbolize() {
+        for (var i = 0; i < base_vegrgn.length; i++) {
+            //求取每一个面的外包矩形
+            var xmax = base_vegrgn[i][0][0];
+            var xmin = base_vegrgn[i][0][0];
+            var ymax = base_vegrgn[i][0][1];
+            var ymin = base_vegrgn[i][0][1];
+            for (var j = 0; j < base_vegrgn[i].length; j++) {
+                if (xmax < base_vegrgn[i][j][0]) {
+                    xmax = base_vegrgn[i][j][0];
+                }
+                if (xmin > base_vegrgn[i][j][0]) {
+                    xmin = base_vegrgn[i][j][0];
+                }
+                if (ymax < base_vegrgn[i][j][1]) {
+                    ymax = base_vegrgn[i][j][1];
+                }
+                if (ymin > base_vegrgn[i][j][1]) {
+                    ymin = base_vegrgn[i][j][1];
+                }
+            }
+
+            //最小外包矩形创建完毕，区域范围为xmin，xmax，ymin，ymax
+            crossover_point2(xmin, xmax, ymin, ymax, base_vegrgn[i]);
+        }
+    }
+    //计算基于等腰直角三角形的直线与一个多边形的交点,基于草地
+    function crossover_point2(xmin, xmax, ymin, ymax, an_polygon) {
+        var basex = xmin;
+        var basey = ymin;
+
+        for (var ii = basex; ii < xmax + (ymax - ymin); ii += 8) {
+            var b1 = ii + basey;
+            var temp = new Array();
+            for (var j = 0; j < an_polygon.length - 1; j++) {
+                //交点坐标
+                var crossx, crossy;
+                //在斜率存在的情况下   
+                if (an_polygon[j + 1][0] != an_polygon[j][0]) {
+                    var k2 = (an_polygon[j + 1][1] - an_polygon[j][1]) / (an_polygon[j + 1][0] - an_polygon[j][0]);
+                    var b2 = (an_polygon[j + 1][0] * an_polygon[j][1] - an_polygon[j][0] * an_polygon[j + 1][1]) / (an_polygon[j + 1][0] - an_polygon[j][0]);
+                    //斜率不同才有交点
+                    if (k2 != (-1)) {
+                        crossx = (b2 - b1) / (-1 - k2);
+                        crossy = (-1) * crossx + b1;
+                    }
+                }
+                //在斜率不存在的情况下
+                else {
+                    crossx = an_polygon[j][0];
+                    crossy = (-1) * crossx + b1;
+                }
+                //保证交点是在有效范围内的  
+                if ((crossx <= an_polygon[j][0] & crossx >= an_polygon[j + 1][0]) || (crossx >= an_polygon[j][0] & crossx <= an_polygon[j + 1][0])) {
+                    if ((crossy <= an_polygon[j][1] & crossy >= an_polygon[j + 1][1]) || (crossy >= an_polygon[j][1] & crossy <= an_polygon[j + 1][1])) {
+                        temp.push([crossx, crossy]);
+                    }
+                }
+            }
+            //对得到的交点坐标排序
+            for (var i = 0; i < temp.length; i++) {
+                for (var j = i; j < temp.length; j++) {
+                    if (temp[i][0] > temp[j][0]) {
+                        var te1 = temp[i][0];
+                        temp[i][0] = temp[j][0];
+                        temp[j][0] = te1;
+                        var te2 = temp[i][1];
+                        temp[i][1] = temp[j][1];
+                        temp[j][1] = te2;
+                    }
+                }
+            }
+            //绘制符号
+            for (var j = 0; j < temp.length - 1; j += 2) {
+                var startx, starty, endx, endy;
+                if (temp[j][0] > temp[j + 1][0]) {
+                    startx = temp[j + 1][0];
+                    starty = temp[j + 1][1];
+                    endx = temp[j][0];
+                    endy = temp[j][1];
+                }
+                else {
+                    startx = temp[j][0];
+                    starty = temp[j][1];
+                    endx = temp[j + 1][0];
+                    endy = temp[j + 1][1];
+                }
+                for (var k = startx; k < endx; k += 8) {
+                    vegrgn_symbol(k, starty);
+                    starty -= 8;
+                }
+
+            }
+        }
+
+    }
+    //符号化集成
+    function total_symbolize() {
+        building_symbolize();
+        vegrgn_symbolize();
+    }
+</script>
+
+</html>
